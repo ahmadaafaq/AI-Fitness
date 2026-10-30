@@ -428,6 +428,7 @@ export default function App() {
     if (currentTab === 'workout') {
       return (
         <WorkoutModule
+          userProfile={userProfile}
           programs={programs}
           exercises={exercises}
           history={workoutHistory}

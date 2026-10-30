@@ -5,6 +5,7 @@ import {
   MuscleGroup,
   WorkoutProgram,
   WorkoutSession,
+  UserProfile,
 } from '../types';
 import {
   Search,
@@ -26,11 +27,14 @@ import {
   Target,
   Activity,
   Sparkles,
+  Loader2,
 } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { InteractiveMuscleMap } from './InteractiveMuscleMap';
 import { ExerciseAnimation } from './ExerciseAnimation';
 
 interface WorkoutModuleProps {
+  userProfile?: UserProfile;
   programs: WorkoutProgram[];
   exercises: Exercise[];
   history: WorkoutSession[];
@@ -42,6 +46,7 @@ interface WorkoutModuleProps {
 }
 
 export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
+  userProfile,
   programs,
   exercises,
   history,
@@ -65,121 +70,258 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
 
   // AI Workout Plan Generator State
   const [isAIPlannerOpen, setIsAIPlannerOpen] = useState(false);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [generatedSuccessToast, setGeneratedSuccessToast] = useState<{ name: string; id: string } | null>(null);
+  const [highlightedProgramId, setHighlightedProgramId] = useState<string | null>(null);
   const [aiGoal, setAiGoal] = useState<'hypertrophy' | 'strength' | 'fat_loss'>('hypertrophy');
   const [aiDays, setAiDays] = useState<number>(4);
   const [aiLevel, setAiLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('intermediate');
   const [aiFocus, setAiFocus] = useState<'balanced' | 'chest_arms' | 'legs_glutes' | 'back_shoulders'>('balanced');
 
-  const handleGenerateAIPlan = () => {
-    let generatedDays: Array<{
-      dayNumber: number;
-      title: string;
-      exercises: Array<{
-        exerciseId: string;
-        targetSets: number;
-        targetReps: string;
-        targetRpe: number;
-        restSeconds: number;
-      }>;
-    }> = [];
+  const handleGenerateAIPlan = async () => {
+    setIsGeneratingPlan(true);
 
-    if (aiDays === 3) {
-      generatedDays = [
-        {
-          dayNumber: 1,
-          title: 'Full Body A (Quad / Chest / Upper Back Focus)',
-          exercises: [
-            { exerciseId: 'ex_barbell_back_squat', targetSets: 4, targetReps: aiGoal === 'strength' ? '4-6' : '8-10', targetRpe: 8.0, restSeconds: 150 },
-            { exerciseId: 'ex_barbell_bench_press', targetSets: 4, targetReps: aiGoal === 'strength' ? '4-6' : '8-10', targetRpe: 8.0, restSeconds: 120 },
-            { exerciseId: 'ex_barbell_bent_over_row', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 90 },
-            { exerciseId: 'ex_standing_overhead_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
-            { exerciseId: 'ex_ez_bar_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
-          ],
-        },
-        {
-          dayNumber: 2,
-          title: 'Full Body B (Hinge / Lat / Shoulder Focus)',
-          exercises: [
-            { exerciseId: 'ex_conventional_deadlift', targetSets: 4, targetReps: aiGoal === 'strength' ? '3-5' : '6-8', targetRpe: 8.5, restSeconds: 180 },
-            { exerciseId: 'ex_incline_dumbbell_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 90 },
-            { exerciseId: 'ex_strict_pullup', targetSets: 3, targetReps: '6-8', targetRpe: 8.5, restSeconds: 90 },
-            { exerciseId: 'ex_dumbbell_lateral_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
-            { exerciseId: 'ex_cable_tricep_pushdown', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
-          ],
-        },
-        {
-          dayNumber: 3,
-          title: 'Full Body C (Hamstring / Pec / Hypertrophy Finish)',
-          exercises: [
-            { exerciseId: 'ex_romanian_deadlift', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 120 },
-            { exerciseId: 'ex_cable_chest_flye', targetSets: 3, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
-            { exerciseId: 'ex_seated_cable_row', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
-            { exerciseId: 'ex_parallel_bar_dips', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
-            { exerciseId: 'ex_standing_calf_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
-          ],
-        },
-      ];
-    } else {
-      generatedDays = [
-        {
-          dayNumber: 1,
-          title: 'Upper Strength & Mechanical Tension',
-          exercises: [
-            { exerciseId: 'ex_barbell_bench_press', targetSets: 4, targetReps: aiGoal === 'strength' ? '4-6' : '6-8', targetRpe: 8.5, restSeconds: 150 },
-            { exerciseId: 'ex_barbell_bent_over_row', targetSets: 4, targetReps: '6-8', targetRpe: 8.0, restSeconds: 120 },
-            { exerciseId: 'ex_standing_overhead_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
-            { exerciseId: 'ex_strict_pullup', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
-            { exerciseId: 'ex_cable_face_pull', targetSets: 3, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
-          ],
-        },
-        {
-          dayNumber: 2,
-          title: 'Lower Anterior & Posterior Kinetic Chain',
-          exercises: [
-            { exerciseId: 'ex_barbell_back_squat', targetSets: 4, targetReps: aiGoal === 'strength' ? '4-6' : '6-8', targetRpe: 8.5, restSeconds: 180 },
-            { exerciseId: 'ex_romanian_deadlift', targetSets: 4, targetReps: '8-10', targetRpe: 8.0, restSeconds: 120 },
-            { exerciseId: 'ex_walking_lunges', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
-            { exerciseId: 'ex_standing_calf_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
-            { exerciseId: 'ex_hanging_leg_raise', targetSets: 3, targetReps: '12-15', targetRpe: 8.5, restSeconds: 60 },
-          ],
-        },
-        {
-          dayNumber: 3,
-          title: 'Upper Hypertrophy & Sarcoplasmic Volume',
-          exercises: [
-            { exerciseId: 'ex_incline_dumbbell_press', targetSets: 4, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
-            { exerciseId: 'ex_lat_pulldown', targetSets: 4, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
-            { exerciseId: 'ex_dumbbell_lateral_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
-            { exerciseId: 'ex_cable_tricep_pushdown', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
-            { exerciseId: 'ex_incline_dumbbell_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
-          ],
-        },
-        {
-          dayNumber: 4,
-          title: 'Lower Posterior Chain & Power Focus',
-          exercises: [
-            { exerciseId: 'ex_conventional_deadlift', targetSets: 4, targetReps: aiGoal === 'strength' ? '3-5' : '6-8', targetRpe: 8.5, restSeconds: 180 },
-            { exerciseId: 'ex_bulgarian_split_squat', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
-            { exerciseId: 'ex_leg_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
-            { exerciseId: 'ex_ab_wheel_rollout', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 60 },
-          ],
-        },
-      ];
+    try {
+      const res = await fetch('/api/groq/workout-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          days: aiDays,
+          goal: aiGoal,
+          level: aiLevel,
+          focus: aiFocus,
+          userContext: {
+            name: userProfile?.name || 'Athlete',
+            weight: userProfile?.weightKg || 78,
+            goal: userProfile?.objective || 'Hypertrophy',
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.plan && data.plan.days && data.plan.days.length > 0) {
+        const newProg: WorkoutProgram = {
+          id: `prog_ai_${Date.now()}`,
+          name: data.plan.name || `YUKSAL AI: Real-Time ${aiGoal}`,
+          description: data.plan.description || `Autoregulated split generated in real-time by Groq AI.`,
+          level: aiLevel,
+          frequencyPerWeek: aiDays,
+          isCustom: true,
+          days: data.plan.days,
+        };
+
+        onSaveProgram(newProg);
+        setHighlightedProgramId(newProg.id);
+        setActiveTab('programs');
+        setIsGeneratingPlan(false);
+        setIsAIPlannerOpen(false);
+        setGeneratedSuccessToast({ name: newProg.name, id: newProg.id });
+
+        try {
+          confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+        } catch (e) {}
+
+        setTimeout(() => {
+          setGeneratedSuccessToast(null);
+        }, 7000);
+        return;
+      }
+    } catch (err) {
+      console.warn('Groq workout plan fetch failed, falling back to local engine:', err);
     }
 
-    const goalLabel = aiGoal === 'hypertrophy' ? 'Hypertrophy Engine' : aiGoal === 'strength' ? 'Peak Strength 1RM' : 'Metabolic Recomposition';
-    const newProg: WorkoutProgram = {
-      id: `prog_ai_${Date.now()}`,
-      name: `YUKSAL AI: ${goalLabel}`,
-      description: `Sports-science autoregulated split with target RPE 8.0-9.0, scientific rest intervals, and progressive overload tracking.`,
-      level: aiLevel,
-      frequencyPerWeek: aiDays,
-      isCustom: true,
-      days: generatedDays,
-    };
+    setTimeout(() => {
+      let generatedDays: Array<{
+        dayNumber: number;
+        title: string;
+        exercises: Array<{
+          exerciseId: string;
+          targetSets: number;
+          targetReps: string;
+          targetRpe: number;
+          restSeconds: number;
+        }>;
+      }> = [];
 
-    onSaveProgram(newProg);
-    setIsAIPlannerOpen(false);
+      const repRange = aiGoal === 'strength' ? '3-5' : aiGoal === 'fat_loss' ? '12-15' : '8-10';
+      const mainRpe = aiGoal === 'strength' ? 8.5 : 8.0;
+      const restSec = aiGoal === 'strength' ? 180 : aiGoal === 'fat_loss' ? 60 : 120;
+
+      if (aiDays === 3) {
+        generatedDays = [
+          {
+            dayNumber: 1,
+            title: aiFocus === 'chest_arms' ? 'Full Body A (Chest & Biceps Bias)' : aiFocus === 'legs_glutes' ? 'Full Body A (Quad & Glute Power)' : 'Full Body A (Squat & Press Priority)',
+            exercises: [
+              { exerciseId: 'ex_barbell_back_squat', targetSets: 4, targetReps: repRange, targetRpe: mainRpe, restSeconds: restSec },
+              { exerciseId: 'ex_barbell_bench_press', targetSets: 4, targetReps: repRange, targetRpe: mainRpe, restSeconds: restSec },
+              { exerciseId: 'ex_barbell_bent_over_row', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 90 },
+              { exerciseId: aiFocus === 'chest_arms' ? 'ex_incline_dumbbell_press' : 'ex_standing_overhead_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_ez_bar_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+            ],
+          },
+          {
+            dayNumber: 2,
+            title: aiFocus === 'back_shoulders' ? 'Full Body B (Lats & Shoulder V-Taper)' : 'Full Body B (Hinge, Pull & Delts)',
+            exercises: [
+              { exerciseId: 'ex_conventional_deadlift', targetSets: 4, targetReps: aiGoal === 'strength' ? '3-5' : '6-8', targetRpe: mainRpe, restSeconds: restSec + 30 },
+              { exerciseId: 'ex_incline_dumbbell_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 90 },
+              { exerciseId: 'ex_strict_pullup', targetSets: 3, targetReps: '6-8', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_dumbbell_lateral_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_cable_tricep_pushdown', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+            ],
+          },
+          {
+            dayNumber: 3,
+            title: aiFocus === 'legs_glutes' ? 'Full Body C (Posterior Chain & Unilateral)' : 'Full Body C (Hypertrophy Engine Finish)',
+            exercises: [
+              { exerciseId: 'ex_romanian_deadlift', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 120 },
+              { exerciseId: 'ex_cable_chest_flye', targetSets: 3, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_seated_cable_row', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_parallel_bar_dips', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_standing_calf_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+            ],
+          },
+        ];
+      } else if (aiDays === 5) {
+        generatedDays = [
+          {
+            dayNumber: 1,
+            title: 'Push A (Chest Mechanical Tension & Front Delts)',
+            exercises: [
+              { exerciseId: 'ex_barbell_bench_press', targetSets: 4, targetReps: repRange, targetRpe: mainRpe, restSeconds: restSec },
+              { exerciseId: 'ex_incline_dumbbell_press', targetSets: 4, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_standing_overhead_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_cable_chest_flye', targetSets: 3, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_cable_tricep_pushdown', targetSets: 4, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+            ],
+          },
+          {
+            dayNumber: 2,
+            title: 'Pull A (Vertical & Horizontal Lat Density)',
+            exercises: [
+              { exerciseId: 'ex_barbell_bent_over_row', targetSets: 4, targetReps: repRange, targetRpe: mainRpe, restSeconds: restSec },
+              { exerciseId: 'ex_strict_pullup', targetSets: 4, targetReps: '6-8', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_seated_cable_row', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_cable_face_pull', targetSets: 3, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_ez_bar_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+            ],
+          },
+          {
+            dayNumber: 3,
+            title: 'Legs A (Quad Drive & Calf Overload)',
+            exercises: [
+              { exerciseId: 'ex_barbell_back_squat', targetSets: 4, targetReps: repRange, targetRpe: mainRpe, restSeconds: restSec + 30 },
+              { exerciseId: 'ex_walking_lunges', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_leg_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_standing_calf_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_hanging_leg_raise', targetSets: 3, targetReps: '12-15', targetRpe: 8.5, restSeconds: 60 },
+            ],
+          },
+          {
+            dayNumber: 4,
+            title: 'Upper B (Delts V-Taper, Upper Chest & Arms)',
+            exercises: [
+              { exerciseId: 'ex_dumbbell_lateral_raise', targetSets: 5, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_incline_dumbbell_press', targetSets: 4, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_lat_pulldown', targetSets: 4, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_incline_dumbbell_curl', targetSets: 4, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_parallel_bar_dips', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+            ],
+          },
+          {
+            dayNumber: 5,
+            title: 'Posterior & Hamstrings (Deadlift & Core Power)',
+            exercises: [
+              { exerciseId: 'ex_conventional_deadlift', targetSets: 4, targetReps: aiGoal === 'strength' ? '3-5' : '6-8', targetRpe: mainRpe, restSeconds: restSec + 30 },
+              { exerciseId: 'ex_romanian_deadlift', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 120 },
+              { exerciseId: 'ex_bulgarian_split_squat', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_ab_wheel_rollout', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 60 },
+            ],
+          },
+        ];
+      } else {
+        // 4 Days
+        generatedDays = [
+          {
+            dayNumber: 1,
+            title: aiFocus === 'chest_arms' ? 'Upper Strength (Chest & Arms Overload)' : 'Upper Strength & Mechanical Tension',
+            exercises: [
+              { exerciseId: 'ex_barbell_bench_press', targetSets: 4, targetReps: repRange, targetRpe: mainRpe, restSeconds: restSec },
+              { exerciseId: 'ex_barbell_bent_over_row', targetSets: 4, targetReps: repRange, targetRpe: 8.0, restSeconds: 120 },
+              { exerciseId: 'ex_standing_overhead_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_strict_pullup', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: aiFocus === 'chest_arms' ? 'ex_ez_bar_curl' : 'ex_cable_face_pull', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+            ],
+          },
+          {
+            dayNumber: 2,
+            title: aiFocus === 'legs_glutes' ? 'Lower Power (Quad & Glute Biomechanics)' : 'Lower Anterior & Posterior Kinetic Chain',
+            exercises: [
+              { exerciseId: 'ex_barbell_back_squat', targetSets: 4, targetReps: repRange, targetRpe: mainRpe, restSeconds: restSec + 30 },
+              { exerciseId: 'ex_romanian_deadlift', targetSets: 4, targetReps: '8-10', targetRpe: 8.0, restSeconds: 120 },
+              { exerciseId: 'ex_walking_lunges', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_standing_calf_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_hanging_leg_raise', targetSets: 3, targetReps: '12-15', targetRpe: 8.5, restSeconds: 60 },
+            ],
+          },
+          {
+            dayNumber: 3,
+            title: aiFocus === 'back_shoulders' ? 'Upper Hypertrophy (Back & Delts V-Taper)' : 'Upper Hypertrophy & Sarcoplasmic Volume',
+            exercises: [
+              { exerciseId: 'ex_incline_dumbbell_press', targetSets: 4, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_lat_pulldown', targetSets: 4, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_dumbbell_lateral_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_cable_tricep_pushdown', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_incline_dumbbell_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+            ],
+          },
+          {
+            dayNumber: 4,
+            title: 'Lower Posterior Chain & Power Focus',
+            exercises: [
+              { exerciseId: 'ex_conventional_deadlift', targetSets: 4, targetReps: aiGoal === 'strength' ? '3-5' : '6-8', targetRpe: mainRpe, restSeconds: restSec + 30 },
+              { exerciseId: 'ex_bulgarian_split_squat', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+              { exerciseId: 'ex_leg_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+              { exerciseId: 'ex_ab_wheel_rollout', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 60 },
+            ],
+          },
+        ];
+      }
+
+      const focusLabel = aiFocus === 'chest_arms' ? 'Chest & Arms' : aiFocus === 'legs_glutes' ? 'Legs & Glutes' : aiFocus === 'back_shoulders' ? 'V-Taper' : 'Balanced';
+      const goalLabel = aiGoal === 'hypertrophy' ? `Hypertrophy Engine (${focusLabel})` : aiGoal === 'strength' ? `Peak Strength (${focusLabel})` : `Metabolic Recomp (${focusLabel})`;
+
+      const newProg: WorkoutProgram = {
+        id: `prog_ai_${Date.now()}`,
+        name: `YUKSAL AI: ${goalLabel}`,
+        description: `Sports-science autoregulated split with target RPE 8.0-9.0, ${aiDays}-day frequency, scientific rest intervals, and progressive overload tracking.`,
+        level: aiLevel,
+        frequencyPerWeek: aiDays,
+        isCustom: true,
+        days: generatedDays,
+      };
+
+      onSaveProgram(newProg);
+      setHighlightedProgramId(newProg.id);
+      setActiveTab('programs');
+      setIsGeneratingPlan(false);
+      setIsAIPlannerOpen(false);
+      setGeneratedSuccessToast({ name: newProg.name, id: newProg.id });
+
+      try {
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.6 },
+        });
+      } catch (e) {
+        // Safe fallback
+      }
+
+      setTimeout(() => {
+        setGeneratedSuccessToast(null);
+      }, 7000);
+    }, 600);
   };
   const [programForm, setProgramForm] = useState<{
     id: string;
@@ -471,6 +613,32 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
       {/* TAB 1: PROGRAMMES */}
       {activeTab === 'programs' && (
         <div className="space-y-6">
+          {/* Newly Generated Program Toast */}
+          {generatedSuccessToast && (
+            <div className="bg-lime-500/15 border border-lime-400/60 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-lg shadow-lime-500/10 animate-fade-in">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-lime-400 text-slate-950 flex items-center justify-center font-bold shrink-0">
+                  <Sparkles className="w-4 h-4 fill-current" />
+                </div>
+                <div>
+                  <p className="font-bold text-white text-sm">Workout Programme Generated & Saved!</p>
+                  <p className="text-slate-300 text-xs">
+                    Added <strong className="text-lime-300 font-semibold">{generatedSuccessToast.name}</strong> to your library.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  const el = document.getElementById(`program-${generatedSuccessToast.id}`);
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="px-3.5 py-1.5 bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold rounded-lg shrink-0 whitespace-nowrap shadow-sm text-xs cursor-pointer"
+              >
+                View Programme ↓
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-white uppercase tracking-wider">
@@ -504,11 +672,17 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
               const isPpl = program.id.includes('ppl');
               const isUpper = program.id.includes('upper');
               const isFull = program.id.includes('full');
+              const isNewlyCreated = highlightedProgramId === program.id;
 
               return (
                 <div
                   key={program.id}
-                  className="bg-[#10151C] border border-[#1E2734] hover:border-[#2B384B] rounded-2xl overflow-hidden shadow-sm transition-all flex flex-col justify-between group"
+                  id={`program-${program.id}`}
+                  className={`bg-[#10151C] border ${
+                    isNewlyCreated
+                      ? 'border-lime-400 ring-2 ring-lime-400/50 shadow-xl shadow-lime-500/20'
+                      : 'border-[#1E2734] hover:border-[#2B384B]'
+                  } rounded-2xl overflow-hidden shadow-sm transition-all flex flex-col justify-between group`}
                 >
                   {/* Visual Top Banner for Programme */}
                   <div
@@ -523,6 +697,11 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
                     } relative`}
                   >
                     <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                      {isNewlyCreated && (
+                        <span className="text-[10px] font-black bg-lime-400 text-slate-950 px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                          ✨ NEWLY GENERATED
+                        </span>
+                      )}
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-lime-400 font-bold border border-lime-500/20">
                         {program.frequencyPerWeek} Days/Wk
                       </span>
@@ -1238,16 +1417,27 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#1E2734]">
               <button
                 onClick={() => setIsAIPlannerOpen(false)}
+                disabled={isGeneratingPlan}
                 className="px-3 py-2 text-xs text-slate-400 hover:text-white"
               >
                 Cancel
               </button>
               <button
                 onClick={handleGenerateAIPlan}
-                className="flex items-center gap-1.5 px-4 py-2 bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-lime-500/20 active:scale-95 transition-all"
+                disabled={isGeneratingPlan}
+                className="flex items-center gap-1.5 px-4 py-2 bg-lime-400 hover:bg-lime-300 disabled:opacity-75 disabled:cursor-wait text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-lime-500/20 active:scale-95 transition-all cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 fill-current" />
-                <span>Generate Plan</span>
+                {isGeneratingPlan ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Calibrating Plan...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 fill-current" />
+                    <span>Generate Plan</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

@@ -137,8 +137,9 @@ export const AICoachModule: React.FC<AICoachModuleProps> = ({
           <div>
             <h2 className="text-xs font-bold text-white flex items-center gap-1.5">
               YUKSAL AI Coach
-              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-lime-500/20 text-lime-400 border border-lime-500/30 font-bold">
-                Gemini 2.5 Flash
+              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Groq Real-Time AI
               </span>
             </h2>
           </div>

@@ -69,8 +69,9 @@ export const Navigation: React.FC<NavigationProps> = ({
             return (
               <button
                 key={tab.id}
+                id={`nav-tab-${tab.id}`}
                 onClick={() => onSelectTab(tab.id)}
-                className={`flex-1 flex flex-col items-center justify-center min-h-[46px] py-1 transition-all active:scale-95 ${
+                className={`flex-1 flex flex-col items-center justify-center min-h-[46px] py-1 transition-all active:scale-95 cursor-pointer ${
                   isActive ? 'text-lime-400' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >

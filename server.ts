@@ -33,7 +33,60 @@ if (apiKey && apiKey !== 'MY_GEMINI_API_KEY' && apiKey.trim() !== '') {
   }
 }
 
-// Server-side AI Coaching Chat Route
+const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+
+async function callGroq(
+  messages: Array<{ role: string; content: string }>,
+  systemPrompt?: string,
+  temperature = 0.6,
+  maxTokens = 550,
+  jsonMode = false
+): Promise<string> {
+  const payloadMessages = [];
+  if (systemPrompt) {
+    payloadMessages.push({ role: 'system', content: systemPrompt });
+  }
+  payloadMessages.push(...messages);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  const reqBody: Record<string, any> = {
+    model: 'qwen/qwen3.8-27b',
+    messages: payloadMessages,
+    temperature,
+    max_tokens: maxTokens,
+  };
+  if (jsonMode) {
+    reqBody.response_format = { type: 'json_object' };
+  }
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reqBody),
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Groq API returned ${response.status}: ${errText}`);
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || '';
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
+  }
+}
+
+// Server-side AI Coaching Chat Route (powered by Groq with Gemini/Simulated fallback)
 app.post('/api/gemini/chat', async (req: Request, res: Response) => {
   const { messages, userContext } = req.body;
 
@@ -41,12 +94,7 @@ app.post('/api/gemini/chat', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Messages array is required.' });
   }
 
-  const latestMessage = messages[messages.length - 1]?.content || '';
-
-  // If Gemini client is active, call Gemini 3.8 Flash
-  if (aiClient) {
-    try {
-      const systemInstruction = `You are "YUKSAL AI", an elite sports scientist, strength coach, and precision sports nutritionist.
+  const systemInstruction = `You are "YUKSAL AI", an elite sports scientist, strength coach, and precision sports nutritionist.
 You speak with professional clarity, evidence-based biomechanics, and actionable motivation.
 Tone: Concise, analytical, encouraging, and razor-sharp. Never prescribe medical treatments or make unsupported claims. Always prioritize joint integrity, progressive overload, and bio-individuality.
 
@@ -62,12 +110,29 @@ User Profile Context:
 
 Format recommendations with bullet points and clear tactical cues. Keep responses under 250 words unless writing a complete custom workout plan.`;
 
+  // 1. First priority: Groq real-time inference
+  try {
+    const formattedMessages = messages.map((m: any) => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.content,
+    }));
+    const replyText = await callGroq(formattedMessages, systemInstruction, 0.7, 450);
+    if (replyText && replyText.trim()) {
+      return res.json({ reply: replyText, isLiveAI: true, provider: 'Groq Real-Time AI (Qwen 3.8 27B)' });
+    }
+  } catch (err: any) {
+    console.warn('Groq AI call failed or timed out, checking fallback:', err?.message || err);
+  }
+
+  const latestMessage = messages[messages.length - 1]?.content || '';
+
+  // 2. Second priority: Gemini client if active
+  if (aiClient) {
+    try {
       const generatePromise = aiClient.models.generateContent({
         model: 'gemini-3.8-flash',
         contents: latestMessage,
-        config: {
-          systemInstruction,
-        },
+        config: { systemInstruction },
       });
 
       const timeoutPromise = new Promise<never>((_, reject) =>
@@ -76,13 +141,13 @@ Format recommendations with bullet points and clear tactical cues. Keep response
 
       const response = await Promise.race([generatePromise, timeoutPromise]);
       const replyText = response.text || 'I analyzed your parameters. Let us fine-tune your next session based on RPE and load autoregulation.';
-      return res.json({ reply: replyText, isLiveAI: true });
+      return res.json({ reply: replyText, isLiveAI: true, provider: 'Gemini 3.8 Flash' });
     } catch (err: any) {
-      console.warn('Gemini API call timed out or failed, falling back to simulated coach:', err?.message || err);
+      console.warn('Gemini API call timed out or failed:', err?.message || err);
     }
   }
 
-  // Fallback high-quality coaching engine (Demo Mode)
+  // 3. Fallback high-quality coaching engine (Rule-based sports science)
   const query = latestMessage.toLowerCase();
   let fallbackReply = '';
 
@@ -118,6 +183,102 @@ Format recommendations with bullet points and clear tactical cues. Keep response
   }
 
   return res.json({ reply: fallbackReply, isLiveAI: false });
+});
+
+// Real-Time Groq AI Workout Plan Generator Route
+app.post('/api/groq/workout-plan', async (req: Request, res: Response) => {
+  const { goal = 'hypertrophy', days = 4, level = 'intermediate', focus = 'balanced', userContext } = req.body;
+
+  const systemPrompt = `You are YUKSAL AI Sports Science Periodization Engine.
+Generate a structured, scientifically autoregulated workout split.
+Keep to 3 to 4 core exercises per day.
+Return ONLY valid JSON matching this schema:
+{
+  "name": "YUKSAL AI: Custom Split",
+  "description": "Short 1-sentence overview",
+  "days": [
+    {
+      "dayNumber": 1,
+      "title": "Upper Power & Strength",
+      "exercises": [
+        { "id": "ex_barbell_bench_press", "sets": 4, "reps": "6-8", "rpe": 8.5 }
+      ]
+    }
+  ]
+}
+Available standard exerciseIds to select from:
+ex_barbell_bench_press, ex_incline_dumbbell_press, ex_cable_chest_flye, ex_barbell_back_squat, ex_conventional_deadlift, ex_romanian_deadlift, ex_walking_lunges, ex_standing_calf_raise, ex_barbell_bent_over_row, ex_lat_pulldown, ex_seated_cable_row, ex_strict_pullup, ex_standing_overhead_press, ex_dumbbell_lateral_raise, ex_cable_face_pull, ex_ez_bar_curl, ex_incline_dumbbell_curl, ex_cable_tricep_pushdown, ex_parallel_bar_dips, ex_bulgarian_split_squat, ex_leg_curl, ex_hanging_leg_raise, ex_ab_wheel_rollout.
+
+CRITICAL: Return strictly raw JSON. Do NOT output <think> tags or codeblocks.`;
+
+  const userPrompt = `Generate a ${days}-day ${goal} workout program for an ${level} athlete with special focus on ${focus}. Athlete context: ${JSON.stringify(userContext || {})}`;
+
+  try {
+    const rawResult = await callGroq([{ role: 'user', content: userPrompt }], systemPrompt, 0.2, 550, true);
+    const cleaned = rawResult
+      .replace(/<think>[\s\S]*?<\/think>/gi, '')
+      .replace(/```json/gi, '')
+      .replace(/```/g, '')
+      .trim();
+    const parsed = JSON.parse(cleaned);
+
+    // Normalize exercise fields so frontend receives consistent schema
+    if (parsed.days && Array.isArray(parsed.days)) {
+      parsed.days = parsed.days.map((d: any) => ({
+        ...d,
+        exercises: (d.exercises || []).map((ex: any) => ({
+          exerciseId: ex.exerciseId || ex.id || 'ex_barbell_bench_press',
+          targetSets: Number(ex.targetSets || ex.sets || 3),
+          targetReps: String(ex.targetReps || ex.reps || '8-10'),
+          targetRpe: Number(ex.targetRpe || ex.rpe || 8.0),
+          restSeconds: Number(ex.restSeconds || 90),
+        })),
+      }));
+    }
+
+    return res.json({ success: true, plan: parsed, provider: 'Groq Real-Time AI' });
+  } catch (err: any) {
+    console.warn('Groq workout plan generation failed, falling back:', err?.message || err);
+    return res.json({ success: false, error: err?.message || 'Groq generation error' });
+  }
+});
+
+// Real-Time Groq AI Diet Plan Generator Route
+app.post('/api/groq/diet-plan', async (req: Request, res: Response) => {
+  const { targetCalories = 2450, proteinTarget = 175, cuisine = 'Uzbekistan', userContext } = req.body;
+
+  const systemPrompt = `You are YUKSAL AI Sports Nutritionist specializing in authentic Central Asian / Uzbekistan athletic nutrition.
+Create a complete 4-meal daily blueprint (breakfast, lunch, dinner, snack) tailored to EXACTLY ~${targetCalories} kcal and ~${proteinTarget}g protein.
+Dishes should incorporate authentic nutritious Uzbek dishes (e.g. Samarkand Osh with lean sirloin, Kazan beef shashlik, Kovurma lagman with durum noodles, Steamed manti, Kainama shorva bone collagen stew, Probiotic suzma with tandir non, dried apricots & nuts).
+
+Return ONLY valid JSON matching this schema:
+{
+  "planName": "Uzbek Athlete Nutrition Blueprint",
+  "focus": "High-protein hypertrophy & endurance",
+  "totalCalories": 2450,
+  "totalProtein": 175,
+  "breakfast": { "name": "...", "desc": "1 sentence description", "calories": 550, "protein": 42, "carbs": 50, "fat": 18 },
+  "lunch": { "name": "...", "desc": "1 sentence description", "calories": 750, "protein": 52, "carbs": 85, "fat": 20 },
+  "dinner": { "name": "...", "desc": "1 sentence description", "calories": 650, "protein": 58, "carbs": 25, "fat": 22 },
+  "snack": { "name": "...", "desc": "1 sentence description", "calories": 500, "protein": 25, "carbs": 40, "fat": 15 }
+}
+CRITICAL: Descriptions MUST be 1 sentence only to keep JSON compact. Return strictly raw JSON. Do NOT output <think> tags or codeblocks.`;
+
+  const userPrompt = `Calibrate an authentic ${cuisine} athlete diet plan. Target Calories: ${targetCalories} kcal, Target Protein: ${proteinTarget}g.`;
+
+  try {
+    const rawResult = await callGroq([{ role: 'user', content: userPrompt }], systemPrompt, 0.2, 550, true);
+    const cleaned = rawResult
+      .replace(/<think>[\s\S]*?<\/think>/gi, '')
+      .replace(/```json/gi, '')
+      .replace(/```/g, '')
+      .trim();
+    const parsed = JSON.parse(cleaned);
+    return res.json({ success: true, plan: parsed, provider: 'Groq Real-Time AI' });
+  } catch (err: any) {
+    console.warn('Groq diet plan generation failed, falling back:', err?.message || err);
+    return res.json({ success: false, error: err?.message || 'Groq generation error' });
+  }
 });
 
 // Proxy / Fallback Food Search API

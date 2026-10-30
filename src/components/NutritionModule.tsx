@@ -13,7 +13,9 @@ import {
   PlusCircle,
   Sparkles,
   ChefHat,
+  Loader2,
 } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 interface NutritionModuleProps {
   userProfile: UserProfile;
@@ -46,7 +48,13 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
 
   // AI Uzbek Diet Planner State
   const [isUzbekPlannerOpen, setIsUzbekPlannerOpen] = useState(false);
+  const [isGeneratingUzbek, setIsGeneratingUzbek] = useState(false);
+  const [uzbekPlanIndex, setUzbekPlanIndex] = useState(0);
+  const [uzbekToast, setUzbekToast] = useState<string | null>(null);
+  const [loggedDishId, setLoggedDishId] = useState<string | null>(null);
   const [generatedUzbekDay, setGeneratedUzbekDay] = useState<{
+    planName: string;
+    focus: string;
     breakfast: { name: string; calories: number; protein: number; carbs: number; fat: number; desc: string };
     lunch: { name: string; calories: number; protein: number; carbs: number; fat: number; desc: string };
     dinner: { name: string; calories: number; protein: number; carbs: number; fat: number; desc: string };
@@ -68,6 +76,59 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
     carbs: 10,
     fat: 3,
   });
+
+  const getFoodVisual = (name: string): { emoji: string; bg: string; border: string } => {
+    const n = (name || '').toLowerCase();
+    if (n.includes('chicken') || n.includes('poultry') || n.includes('breast') || n.includes('wing') || n.includes('thigh')) {
+      return { emoji: '🍗', bg: 'bg-amber-500/15 text-amber-300', border: 'border-amber-500/30' };
+    }
+    if (n.includes('beef') || n.includes('steak') || n.includes('sirloin') || n.includes('shashlik') || n.includes('meat') || n.includes('lamb') || n.includes('shank')) {
+      return { emoji: '🥩', bg: 'bg-rose-500/15 text-rose-300', border: 'border-rose-500/30' };
+    }
+    if (n.includes('fish') || n.includes('salmon') || n.includes('tuna') || n.includes('cod') || n.includes('seafood')) {
+      return { emoji: '🐟', bg: 'bg-cyan-500/15 text-cyan-300', border: 'border-cyan-500/30' };
+    }
+    if (n.includes('plov') || n.includes('osh') || n.includes('rice') || n.includes('devzira') || n.includes('biryani') || n.includes('pilaf')) {
+      return { emoji: '🥘', bg: 'bg-yellow-500/15 text-yellow-300', border: 'border-yellow-500/30' };
+    }
+    if (n.includes('manti') || n.includes('dumpling') || n.includes('chuchvara') || n.includes('soms') || n.includes('somsa')) {
+      return { emoji: '🥟', bg: 'bg-orange-500/15 text-orange-300', border: 'border-orange-500/30' };
+    }
+    if (n.includes('lagman') || n.includes('noodle') || n.includes('pasta') || n.includes('spaghetti')) {
+      return { emoji: '🍜', bg: 'bg-amber-500/15 text-amber-300', border: 'border-amber-500/30' };
+    }
+    if (n.includes('shorva') || n.includes('soup') || n.includes('broth') || n.includes('stew')) {
+      return { emoji: '🍲', bg: 'bg-red-500/15 text-red-300', border: 'border-red-500/30' };
+    }
+    if (n.includes('egg') || n.includes('omelet') || n.includes('albumin')) {
+      return { emoji: '🍳', bg: 'bg-yellow-500/15 text-yellow-300', border: 'border-yellow-500/30' };
+    }
+    if (n.includes('oat') || n.includes('porridge') || n.includes('cereal') || n.includes('granola')) {
+      return { emoji: '🥣', bg: 'bg-amber-500/15 text-amber-300', border: 'border-amber-500/30' };
+    }
+    if (n.includes('whey') || n.includes('protein') || n.includes('shake') || n.includes('isolate') || n.includes('casein')) {
+      return { emoji: '🥛', bg: 'bg-indigo-500/15 text-indigo-300', border: 'border-indigo-500/30' };
+    }
+    if (n.includes('suzma') || n.includes('yogurt') || n.includes('curd') || n.includes('tvorog') || n.includes('ayran') || n.includes('kaimak')) {
+      return { emoji: '🍶', bg: 'bg-blue-500/15 text-blue-300', border: 'border-blue-500/30' };
+    }
+    if (n.includes('blueberr') || n.includes('berr') || n.includes('strawberr') || n.includes('apricot') || n.includes('apple') || n.includes('banana') || n.includes('fruit')) {
+      return { emoji: '🫐', bg: 'bg-purple-500/15 text-purple-300', border: 'border-purple-500/30' };
+    }
+    if (n.includes('broccoli') || n.includes('spinach') || n.includes('salad') || n.includes('vegetable') || n.includes('greens') || n.includes('cucumber')) {
+      return { emoji: '🥦', bg: 'bg-emerald-500/15 text-emerald-300', border: 'border-emerald-500/30' };
+    }
+    if (n.includes('non') || n.includes('tandir') || n.includes('bread') || n.includes('toast') || n.includes('flatbread')) {
+      return { emoji: '🫓', bg: 'bg-amber-500/15 text-amber-300', border: 'border-amber-500/30' };
+    }
+    if (n.includes('nut') || n.includes('almond') || n.includes('walnut') || n.includes('peanut') || n.includes('pistachio')) {
+      return { emoji: '🥜', bg: 'bg-yellow-600/15 text-yellow-300', border: 'border-yellow-600/30' };
+    }
+    if (n.includes('avocado') || n.includes('guacamole')) {
+      return { emoji: '🥑', bg: 'bg-lime-500/15 text-lime-300', border: 'border-lime-500/30' };
+    }
+    return { emoji: '🍽️', bg: 'bg-slate-700/30 text-slate-300', border: 'border-slate-700/50' };
+  };
 
   const uzbekDishesList = [
     {
@@ -152,41 +213,240 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
     },
   ];
 
-  const handleGenerateUzbekPlan = () => {
-    setGeneratedUzbekDay({
-      breakfast: {
-        name: 'Suzma Probiotic Dip with 2 Boiled Eggs & Half Tandir Non',
-        desc: 'High bioavailability morning protein with slow-digesting complex carbs',
-        calories: 450,
-        protein: 36,
-        carbs: 42,
-        fat: 14,
+  const UZBEK_PLANS = [
+    {
+      id: 'plan_samarkand',
+      name: 'Samarkand Championship Power Split',
+      focus: 'High Glycogen & Iron Refueling for Heavy Strength Days',
+      meals: {
+        breakfast: {
+          name: 'Suzma Probiotic Dip with 2 Boiled Eggs & Half Tandir Non',
+          desc: 'High bioavailability morning protein with slow-digesting complex carbs',
+          baseKcal: 450,
+          baseP: 36,
+          baseC: 42,
+          baseF: 14,
+        },
+        lunch: {
+          name: 'Samarkand Osh / Plov (Lean Sirloin + Devzira Rice)',
+          desc: 'Rich in potassium, iron, and sustained muscle glycogen refueling',
+          baseKcal: 640,
+          baseP: 46,
+          baseC: 74,
+          baseF: 16,
+        },
+        dinner: {
+          name: 'Kazan Spiced Beef Shashlik with Achichuk Tomato Salad',
+          desc: 'High-leucine anabolic recovery dinner without excess starch',
+          baseKcal: 520,
+          baseP: 56,
+          baseC: 14,
+          baseF: 18,
+        },
+        snack: {
+          name: 'Chuchvara Clear Broth + Samarkand Dried Apricots & Walnuts',
+          desc: 'Joint collagen support and intra-workout healthy fats',
+          baseKcal: 340,
+          baseP: 20,
+          baseC: 40,
+          baseF: 12,
+        },
       },
-      lunch: {
-        name: 'Samarkand Osh / Plov (Lean Sirloin + Devzira Rice)',
-        desc: 'Rich in potassium, iron, and sustained muscle glycogen refueling',
-        calories: 620,
-        protein: 44,
-        carbs: 72,
-        fat: 16,
+    },
+    {
+      id: 'plan_tashkent',
+      name: 'Tashkent Hypertrophy & Muscle Recovery',
+      focus: 'High Leucine Pacing with Hand-Pulled Durum Wheat Carbohydrates',
+      meals: {
+        breakfast: {
+          name: 'Tandir Non with 3 Sunny Eggs & Herb Kaimak',
+          desc: 'Crisp hot tandoor flatbread quarter with 3 sunny eggs and fresh herbs',
+          baseKcal: 460,
+          baseP: 32,
+          baseC: 40,
+          baseF: 18,
+        },
+        lunch: {
+          name: 'Tashkent Kovurma Lagman (Lean Beef Strips + Hand-Pulled Noodles)',
+          desc: 'Durum wheat carbs with tender beef, sweet bell peppers and savory jus',
+          baseKcal: 620,
+          baseP: 44,
+          baseC: 76,
+          baseF: 14,
+        },
+        dinner: {
+          name: 'Steamed Pumpkin & Beef Manti (4 pcs) with Herbed Suzma Dip',
+          desc: 'Thin hand-rolled pastry filled with lean minced beef & pumpkin cubes',
+          baseKcal: 500,
+          baseP: 42,
+          baseC: 56,
+          baseF: 14,
+        },
+        snack: {
+          name: 'Probiotic Suzma Curd with Crushed Walnuts & Mountain Honey',
+          desc: 'Slow-release micellar casein protein for overnight tissue rebuilding',
+          baseKcal: 320,
+          baseP: 28,
+          baseC: 22,
+          baseF: 10,
+        },
       },
-      dinner: {
-        name: 'Kazan Spiced Beef Shashlik with Achichuk Tomato Onion Salad',
-        desc: 'High-leucine anabolic recovery dinner without excess starch',
-        calories: 480,
-        protein: 54,
-        carbs: 12,
-        fat: 16,
+    },
+    {
+      id: 'plan_fergana',
+      name: 'Fergana Valley High-Protein Recomposition',
+      focus: 'Bone Collagen Mineral Hydration & Lean Beef Shashlik',
+      meals: {
+        breakfast: {
+          name: 'Herbed Suzma Bowl with 3 Soft Boiled Eggs & Fresh Radish',
+          desc: 'Probiotic strained sour curd paired with high-albumin whole eggs',
+          baseKcal: 430,
+          baseP: 38,
+          baseC: 20,
+          baseF: 16,
+        },
+        lunch: {
+          name: 'Kainama Shorva (Slow-Simmered Beef Shank Bone Collagen Stew)',
+          desc: 'Restorative mineral broth with tender beef shank, carrots and baby potatoes',
+          baseKcal: 550,
+          baseP: 48,
+          baseC: 42,
+          baseF: 16,
+        },
+        dinner: {
+          name: 'Chargrilled Beef Sirloin Shashlik (3 Skewers) with Sumac Onions',
+          desc: 'Ultra-pure muscle protein with zero heavy starches for deep REM recovery',
+          baseKcal: 560,
+          baseP: 60,
+          baseC: 10,
+          baseF: 20,
+        },
+        snack: {
+          name: 'Golden Fergana Dried Apricots, Almonds & Chuchvara Broth',
+          desc: 'Natural trace minerals, potassium and intra-workout joint support',
+          baseKcal: 340,
+          baseP: 22,
+          baseC: 38,
+          baseF: 12,
+        },
       },
-      snack: {
-        name: 'Chuchvara Clear Broth + Samarkand Dried Apricots & Walnuts',
-        desc: 'Joint collagen support and intra-workout healthy fats',
-        calories: 320,
-        protein: 18,
-        carbs: 38,
-        fat: 10,
+    },
+    {
+      id: 'plan_bukhara',
+      name: 'Bukhara Olympic Lifting Fuel Plan',
+      focus: 'Sustained Devzira Rice Glycogen & Complete Amino Acids',
+      meals: {
+        breakfast: {
+          name: 'Tandir Non with 3 Poached Eggs & Suzma Spread',
+          desc: 'Slow-carb morning anchor with bioavailable egg albumin and minerals',
+          baseKcal: 470,
+          baseP: 34,
+          baseC: 44,
+          baseF: 16,
+        },
+        lunch: {
+          name: 'Bukhara Oshi Sofi (Dietary Steamed Devzira with Lean Beef & Raisins)',
+          desc: 'Lightly steamed royal plov calibrated for low dietary fat and sustained energy',
+          baseKcal: 630,
+          baseP: 45,
+          baseC: 78,
+          baseF: 14,
+        },
+        dinner: {
+          name: 'Kazan Spiced Beef Lulya Shashlik with Achichuk Salad',
+          desc: 'Minced spiced beef tenderloin skewers with antioxidant tomato & onion salad',
+          baseKcal: 510,
+          baseP: 52,
+          baseC: 16,
+          baseF: 18,
+        },
+        snack: {
+          name: 'Chuchvara Broth Cup + Roasted Samarkand Pistachios',
+          desc: 'Electrolytes, collagen, and healthy monounsaturated fatty acids',
+          baseKcal: 330,
+          baseP: 24,
+          baseC: 28,
+          baseF: 14,
+        },
       },
-    });
+    },
+  ];
+
+  const handleGenerateUzbekPlan = async (indexOverride?: number) => {
+    setIsGeneratingUzbek(true);
+
+    try {
+      const res = await fetch('/api/groq/diet-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetCalories,
+          proteinTarget,
+          cuisine: 'Uzbekistan',
+          userContext: {
+            name: userProfile?.name || 'Athlete',
+            goal: userProfile?.objective || 'Muscle Gain',
+            weight: userProfile?.weightKg || 78,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.plan) {
+        setGeneratedUzbekDay({
+          planName: data.plan.planName || 'AI Uzbek Athlete Blueprint',
+          focus: data.plan.focus || 'Calibrated for High-Performance Strength',
+          breakfast: data.plan.breakfast,
+          lunch: data.plan.lunch,
+          dinner: data.plan.dinner,
+          snack: data.plan.snack,
+        });
+        setIsGeneratingUzbek(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('Groq diet plan fetch failed, falling back to local calibration:', err);
+    }
+
+    const nextIdx = indexOverride !== undefined ? indexOverride : (uzbekPlanIndex + 1) % UZBEK_PLANS.length;
+    setUzbekPlanIndex(nextIdx);
+
+    setTimeout(() => {
+      const selectedPlan = UZBEK_PLANS[nextIdx];
+      const baseTotalKcal =
+        selectedPlan.meals.breakfast.baseKcal +
+        selectedPlan.meals.lunch.baseKcal +
+        selectedPlan.meals.dinner.baseKcal +
+        selectedPlan.meals.snack.baseKcal;
+
+      const baseTotalP =
+        selectedPlan.meals.breakfast.baseP +
+        selectedPlan.meals.lunch.baseP +
+        selectedPlan.meals.dinner.baseP +
+        selectedPlan.meals.snack.baseP;
+
+      const scaleKcal = targetCalories / baseTotalKcal;
+      const scaleP = proteinTarget / baseTotalP;
+
+      const scaleDish = (m: { name: string; desc: string; baseKcal: number; baseP: number; baseC: number; baseF: number }) => ({
+        name: m.name,
+        desc: m.desc,
+        calories: Math.round(m.baseKcal * scaleKcal),
+        protein: Math.round(m.baseP * scaleP * 10) / 10,
+        carbs: Math.round(m.baseC * scaleKcal * 10) / 10,
+        fat: Math.round(m.baseF * scaleKcal * 10) / 10,
+      });
+
+      setGeneratedUzbekDay({
+        planName: selectedPlan.name,
+        focus: selectedPlan.focus,
+        breakfast: scaleDish(selectedPlan.meals.breakfast),
+        lunch: scaleDish(selectedPlan.meals.lunch),
+        dinner: scaleDish(selectedPlan.meals.dinner),
+        snack: scaleDish(selectedPlan.meals.snack),
+      });
+
+      setIsGeneratingUzbek(false);
+    }, 400);
   };
 
   const handleLogWholeUzbekDay = () => {
@@ -211,7 +471,42 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
         fat: item.fat,
       });
     });
+
+    const totalLogKcal =
+      generatedUzbekDay.breakfast.calories +
+      generatedUzbekDay.lunch.calories +
+      generatedUzbekDay.dinner.calories +
+      generatedUzbekDay.snack.calories;
+
     setIsUzbekPlannerOpen(false);
+
+    try {
+      confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+    } catch (e) {
+      // Safe fallback
+    }
+
+    setUzbekToast(`🎉 Successfully logged all 4 authentic Uzbek meals (${totalLogKcal} kcal) to ${selectedDate}!`);
+    setTimeout(() => setUzbekToast(null), 6000);
+  };
+
+  const handleLogIndividualUzbekDish = (dish: typeof uzbekDishesList[0]) => {
+    onAddMealEntry({
+      id: `meal_uz_${Date.now()}_${dish.id}`,
+      date: selectedDate,
+      mealType: dish.meal as any,
+      foodId: dish.id,
+      foodName: dish.name,
+      servings: 1,
+      calories: dish.calories,
+      protein: dish.protein,
+      carbs: dish.carbs,
+      fat: dish.fat,
+    });
+    setLoggedDishId(dish.id);
+    setUzbekToast(`✅ Logged "${dish.name}" (${dish.calories} kcal) to ${selectedDate}!`);
+    setTimeout(() => setLoggedDishId(null), 2000);
+    setTimeout(() => setUzbekToast(null), 6000);
   };
 
   // Calculate totals for selected date
@@ -316,15 +611,33 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
     setActiveTab('search');
   };
 
-  const mealsList: Array<{ id: 'breakfast' | 'lunch' | 'dinner' | 'snack'; title: string }> = [
-    { id: 'breakfast', title: 'Breakfast' },
-    { id: 'lunch', title: 'Lunch' },
-    { id: 'dinner', title: 'Dinner' },
-    { id: 'snack', title: 'Snacks & Supplements' },
+  const mealsList: Array<{ id: 'breakfast' | 'lunch' | 'dinner' | 'snack'; title: string; icon: string; subtitle: string }> = [
+    { id: 'breakfast', title: 'Breakfast', icon: '🌅', subtitle: 'Morning metabolic activation' },
+    { id: 'lunch', title: 'Lunch', icon: '☀️', subtitle: 'Peak midday fuel & glycogen' },
+    { id: 'dinner', title: 'Dinner', icon: '🌙', subtitle: 'Overnight recovery & MPS' },
+    { id: 'snack', title: 'Snacks & Supplements', icon: '⚡', subtitle: 'Intra-day amino spikes' },
   ];
 
   return (
     <div className="space-y-6 pb-20">
+      {/* Toast Notification Banner */}
+      {uzbekToast && (
+        <div className="bg-emerald-500/15 border border-emerald-400/60 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs shadow-lg shadow-emerald-500/10 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-emerald-400 text-slate-950 flex items-center justify-center font-bold shrink-0">
+              <Check className="w-4 h-4 stroke-[3]" />
+            </div>
+            <p className="font-semibold text-slate-100">{uzbekToast}</p>
+          </div>
+          <button
+            onClick={() => setUzbekToast(null)}
+            className="text-slate-400 hover:text-white p-1"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Header & Date */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18212C] pb-4">
         <div>
@@ -346,33 +659,81 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
         </div>
       </div>
 
-      {/* AI Uzbek Athlete Diet Planner Banner Card */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-950/70 via-[#101822] to-teal-950/50 border border-emerald-500/30 p-4 sm:p-5 shadow-lg shadow-emerald-950/20">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[11px] font-bold uppercase tracking-wider border border-emerald-500/30">
-              <Sparkles className="w-3 h-3 text-emerald-300" />
+      {/* AI Uzbek Athlete Diet Planner Banner Card (Redesigned & Responsive) */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0b1715] via-[#101822] to-[#091519] border border-emerald-500/40 p-4 sm:p-5 shadow-xl shadow-emerald-950/30">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+
+        <div className="relative z-10 flex flex-col gap-3.5">
+          {/* Top Badges Row */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-[11px] font-bold uppercase tracking-wider border border-emerald-500/30 whitespace-nowrap shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
               <span>AI Diet Planner · Uzbekistan Cuisine</span>
             </div>
-            <h2 className="text-base sm:text-lg font-extrabold text-white">
-              AI Uzbek Athlete Diet Planner
+
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-400/10 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-400/20 whitespace-nowrap">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Groq Real-Time AI</span>
+            </div>
+          </div>
+
+          {/* Title & Description */}
+          <div className="space-y-1.5">
+            <h2 className="text-base sm:text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
+              <span>AI Uzbek Athlete Diet Planner</span>
+              <span className="text-base">🇺🇿</span>
             </h2>
-            <p className="text-xs text-slate-300 max-w-xl">
-              Authentic high-protein Central Asian dishes calibrated to your daily goal of{' '}
-              <span className="text-emerald-400 font-mono font-bold">{targetCalories} kcal</span> and{' '}
-              <span className="text-lime-400 font-mono font-bold">{proteinTarget}g protein</span> (Samarkand Osh, Kazan Shashlik, Lagman, Manti, Shorva, Suzma).
+            <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+              Authentic high-protein Central Asian dishes calibrated in real time to your daily goal of{' '}
+              <span className="inline-block px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
+                {targetCalories} kcal
+              </span>{' '}
+              and{' '}
+              <span className="inline-block px-1.5 py-0.5 rounded bg-lime-500/20 text-lime-300 font-mono font-bold border border-lime-500/30">
+                {proteinTarget}g protein
+              </span>
+              .
             </p>
           </div>
-          <button
-            onClick={() => {
-              if (!generatedUzbekDay) handleGenerateUzbekPlan();
-              setIsUzbekPlannerOpen(true);
-            }}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-xs rounded-xl shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] whitespace-nowrap self-start sm:self-center"
-          >
-            <ChefHat className="w-4 h-4" />
-            <span>Open AI Diet Planner</span>
-          </button>
+
+          {/* Authentic Dish Chips Showcase */}
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { emoji: '🥘', label: 'Samarkand Osh' },
+              { emoji: '🥩', label: 'Kazan Shashlik' },
+              { emoji: '🥟', label: 'Steamed Manti' },
+              { emoji: '🍜', label: 'Kovurma Lagman' },
+              { emoji: '🍲', label: 'Bone Shorva' },
+              { emoji: '🥣', label: 'Probiotic Suzma' },
+            ].map((d) => (
+              <span
+                key={d.label}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#141E28] border border-[#233346] text-[11px] text-slate-300 hover:border-emerald-500/40 hover:text-white transition-colors"
+              >
+                <span>{d.emoji}</span>
+                <span className="font-medium">{d.label}</span>
+              </span>
+            ))}
+          </div>
+
+          {/* Bottom Action Strip */}
+          <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-[#182330]">
+            <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
+              <span>Devzira glycogen & restorative bone collagen for peak recovery</span>
+            </p>
+            <button
+              id="open-uzbek-diet-planner-btn"
+              onClick={() => {
+                if (!generatedUzbekDay) handleGenerateUzbekPlan();
+                setIsUzbekPlannerOpen(true);
+              }}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-lime-400 hover:from-emerald-300 hover:to-lime-300 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98] whitespace-nowrap cursor-pointer"
+            >
+              <ChefHat className="w-4 h-4" />
+              <span>Open AI Diet Planner</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -491,56 +852,104 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
           return (
             <div
               key={meal.id}
-              className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-4 shadow-sm"
+              className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-4 sm:p-5 shadow-sm transition-all hover:border-[#273547]"
             >
               {/* Meal Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-[#1A232E]">
-                <div>
-                  <h3 className="text-sm font-bold text-white">{meal.title}</h3>
-                  <p className="text-[11px] text-slate-400 font-mono">
-                    {mealCalories} kcal · {mealProtein}g protein
-                  </p>
+              <div className="flex items-center justify-between pb-3.5 border-b border-[#1A232E]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#141D27] border border-[#223040] flex items-center justify-center text-lg shadow-sm">
+                    <span>{meal.icon}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-1.5">
+                      <span>{meal.title}</span>
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-mono">
+                      <span className="text-white font-bold">{mealCalories}</span> kcal ·{' '}
+                      <span className="text-emerald-400 font-bold">{mealProtein}g</span> protein
+                    </p>
+                  </div>
                 </div>
+
                 <button
                   onClick={() => handleOpenAddFood(meal.id)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#141C25] hover:bg-[#1A2533] border border-[#233142] text-xs font-semibold text-lime-400 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#141C25] hover:bg-[#1C2735] border border-[#233142] text-xs font-bold text-lime-400 rounded-lg transition-colors cursor-pointer shadow-sm active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  Add Food
+                  <span>Add Food</span>
                 </button>
               </div>
 
               {/* Items List */}
               {currentMealItems.length === 0 ? (
-                <p className="text-xs text-slate-500 py-3 text-center">
-                  No foods logged for {meal.title.toLowerCase()} yet.
-                </p>
+                <div className="py-5 text-center flex flex-col items-center justify-center gap-1.5">
+                  <div className="w-9 h-9 rounded-full bg-[#131A22] flex items-center justify-center text-base opacity-60">
+                    <span>{meal.icon}</span>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium">
+                    No foods logged for {meal.title.toLowerCase()} yet.
+                  </p>
+                </div>
               ) : (
-                <div className="divide-y divide-[#161F2A]">
-                  {currentMealItems.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="py-2.5 flex items-center justify-between text-xs"
-                    >
-                      <div>
-                        <p className="font-semibold text-slate-200">{entry.foodName}</p>
-                        <p className="text-[11px] text-slate-400 font-mono">
-                          {entry.servings} serving{entry.servings > 1 ? 's' : ''} · P: {entry.protein}g · C: {entry.carbs}g · F: {entry.fat}g
-                        </p>
-                      </div>
+                <div className="divide-y divide-[#161F2A] pt-1">
+                  {currentMealItems.map((entry) => {
+                    const visual = getFoodVisual(entry.foodName);
+                    return (
+                      <div
+                        key={entry.id}
+                        className="py-3 flex items-center justify-between gap-3 text-xs group hover:bg-[#131B24]/60 px-2 rounded-xl transition-all"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Dish Icon / Emoji Avatar */}
+                          <div
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 border ${visual.bg} ${visual.border} shadow-sm transition-transform group-hover:scale-105`}
+                            title={entry.foodName}
+                          >
+                            <span>{visual.emoji}</span>
+                          </div>
 
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-white font-mono">{entry.calories} kcal</span>
-                        <button
-                          onClick={() => onDeleteMealEntry(entry.id)}
-                          className="text-slate-500 hover:text-red-400 p-1"
-                          title="Delete entry"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          {/* Food Name & Dynamic Macro Pills */}
+                          <div className="min-w-0 space-y-1">
+                            <p className="font-bold text-slate-100 text-xs sm:text-sm truncate">
+                              {entry.foodName}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
+                              <span className="text-slate-400">
+                                {entry.servings} serving{entry.servings > 1 ? 's' : ''}
+                              </span>
+                              <span className="text-slate-600">·</span>
+                              <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/25">
+                                {entry.protein}g P
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 font-bold border border-sky-500/25">
+                                {entry.carbs}g C
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 font-bold border border-amber-500/25">
+                                {entry.fat}g F
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Calories & Delete Action */}
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <div className="text-right">
+                            <p className="font-extrabold text-white font-mono text-sm">
+                              {entry.calories}
+                            </p>
+                            <p className="text-[10px] text-slate-400 font-mono -mt-0.5">kcal</p>
+                          </div>
+                          <button
+                            onClick={() => onDeleteMealEntry(entry.id)}
+                            className="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 p-2 rounded-lg transition-colors cursor-pointer"
+                            title="Delete entry"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -613,29 +1022,35 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
 
                 {/* List Results */}
                 <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-                  {(searchResults.length > 0 ? searchResults : foodDatabase).map((food) => (
-                    <div
-                      key={food.id}
-                      onClick={() => setSelectedFood(food)}
-                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                        selectedFood?.id === food.id
-                          ? 'border-lime-400 bg-lime-500/10'
-                          : 'border-[#202C3B] bg-[#141C25] hover:bg-[#1A2533]'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs font-bold text-white">{food.name}</p>
-                          <p className="text-[11px] text-slate-400 font-mono">
-                            {food.servingSize} · P: {food.protein}g · C: {food.carbs}g · F: {food.fat}g
-                          </p>
+                  {(searchResults.length > 0 ? searchResults : foodDatabase).map((food) => {
+                    const visual = getFoodVisual(food.name);
+                    return (
+                      <div
+                        key={food.id}
+                        onClick={() => setSelectedFood(food)}
+                        className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
+                          selectedFood?.id === food.id
+                            ? 'border-lime-400 bg-lime-500/10'
+                            : 'border-[#202C3B] bg-[#141C25] hover:bg-[#1A2533]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 border ${visual.bg} ${visual.border}`}>
+                            <span>{visual.emoji}</span>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-white truncate">{food.name}</p>
+                            <p className="text-[11px] text-slate-400 font-mono">
+                              {food.servingSize} · P: {food.protein}g · C: {food.carbs}g · F: {food.fat}g
+                            </p>
+                          </div>
                         </div>
-                        <span className="text-xs font-mono font-bold text-lime-400">
+                        <span className="text-xs font-mono font-bold text-lime-400 shrink-0">
                           {food.calories} kcal
                         </span>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -810,55 +1225,87 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
                   <p className="text-[11px] text-slate-400">Calibrates 4 meals of authentic Uzbek cuisine to your exact macros</p>
                 </div>
                 <button
-                  onClick={handleGenerateUzbekPlan}
-                  className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs rounded-lg transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5 whitespace-nowrap active:scale-[0.98]"
+                  id="generate-uzbek-plan-btn"
+                  onClick={() => handleGenerateUzbekPlan()}
+                  disabled={isGeneratingUzbek}
+                  className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-75 disabled:cursor-wait text-slate-950 font-black text-xs rounded-lg transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5 whitespace-nowrap active:scale-[0.98] cursor-pointer"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Generate</span>
+                  {isGeneratingUzbek ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Calibrating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Generate</span>
+                    </>
+                  )}
                 </button>
               </div>
 
               {/* Generated Meals Blueprint */}
               {generatedUzbekDay && (
                 <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Today's Uzbek Athlete Blueprint</span>
-                    </h3>
-                    <span className="text-[11px] text-slate-400 font-mono">
-                      {generatedUzbekDay.breakfast.calories +
-                        generatedUzbekDay.lunch.calories +
-                        generatedUzbekDay.dinner.calories +
-                        generatedUzbekDay.snack.calories}{' '}
-                      kcal total
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase font-bold text-emerald-400">
+                        <Sparkles className="w-3 h-3" />
+                        <span>{generatedUzbekDay.planName}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 mt-0.5">{generatedUzbekDay.focus}</p>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 shrink-0 self-start sm:self-auto">
+                      Calibrated: {generatedUzbekDay.breakfast.calories + generatedUzbekDay.lunch.calories + generatedUzbekDay.dinner.calories + generatedUzbekDay.snack.calories} kcal
                     </span>
                   </div>
 
                   {[
-                    { label: 'Breakfast', dish: generatedUzbekDay.breakfast, color: 'text-amber-400' },
-                    { label: 'Lunch', dish: generatedUzbekDay.lunch, color: 'text-emerald-400' },
-                    { label: 'Dinner', dish: generatedUzbekDay.dinner, color: 'text-sky-400' },
-                    { label: 'Snack & Recovery', dish: generatedUzbekDay.snack, color: 'text-purple-400' },
-                  ].map(({ label, dish, color }) => (
-                    <div key={label} className="p-3 rounded-xl bg-[#131B24] border border-[#1E2938] space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className={`font-bold ${color}`}>{label}</span>
-                        <span className="font-mono font-bold text-white">{dish.calories} kcal</span>
+                    { label: 'Breakfast', dish: generatedUzbekDay.breakfast, color: 'text-amber-400', timeIcon: '🌅' },
+                    { label: 'Lunch', dish: generatedUzbekDay.lunch, color: 'text-emerald-400', timeIcon: '☀️' },
+                    { label: 'Dinner', dish: generatedUzbekDay.dinner, color: 'text-sky-400', timeIcon: '🌙' },
+                    { label: 'Snack & Recovery', dish: generatedUzbekDay.snack, color: 'text-purple-400', timeIcon: '⚡' },
+                  ].map(({ label, dish, color, timeIcon }) => {
+                    const visual = getFoodVisual(dish.name);
+                    return (
+                      <div key={label} className="p-3.5 rounded-xl bg-[#131B24] border border-[#1E2938] space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className={`font-bold ${color} flex items-center gap-1.5`}>
+                            <span>{timeIcon}</span>
+                            <span>{label}</span>
+                          </span>
+                          <span className="font-mono font-bold text-white bg-[#1A2533] px-2 py-0.5 rounded border border-[#273547]">
+                            {dish.calories} kcal
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2.5">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 border ${visual.bg} ${visual.border}`}>
+                            <span>{visual.emoji}</span>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-100">{dish.name}</p>
+                            <p className="text-[11px] text-slate-400 leading-snug">{dish.desc}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 pt-0.5 text-[10px] font-mono">
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/25">
+                            {dish.protein}g Protein
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 font-bold border border-sky-500/25">
+                            {dish.carbs}g Carbs
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 font-bold border border-amber-500/25">
+                            {dish.fat}g Fat
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-xs font-bold text-slate-200">{dish.name}</p>
-                      <p className="text-[11px] text-slate-400">{dish.desc}</p>
-                      <div className="flex items-center gap-3 pt-1 text-[11px] font-mono text-slate-400">
-                        <span>P: <strong className="text-emerald-400">{dish.protein}g</strong></span>
-                        <span>C: <strong className="text-sky-400">{dish.carbs}g</strong></span>
-                        <span>F: <strong className="text-amber-400">{dish.fat}g</strong></span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   <button
+                    id="log-all-uzbek-meals-btn"
                     onClick={handleLogWholeUzbekDay}
-                    className="w-full py-2.5 bg-gradient-to-r from-emerald-400 to-lime-400 hover:from-emerald-300 hover:to-lime-300 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 mt-2 active:scale-[0.98]"
+                    className="w-full py-2.5 bg-gradient-to-r from-emerald-400 to-lime-400 hover:from-emerald-300 hover:to-lime-300 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 mt-2 active:scale-[0.98] cursor-pointer"
                   >
                     <Check className="w-4 h-4" />
                     <span>Log All 4 Meals to Selected Date ({selectedDate})</span>
@@ -872,43 +1319,41 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
                   Individual Uzbek Athlete Dishes (1-Click Log)
                 </h3>
                 <div className="space-y-2">
-                  {uzbekDishesList.map((dish) => (
-                    <div
-                      key={dish.id}
-                      className="p-3 rounded-xl bg-[#121922] border border-[#1C2633] hover:border-emerald-500/30 transition-all flex items-center justify-between gap-3"
-                    >
-                      <div className="text-xs">
-                        <p className="font-bold text-white">{dish.name}</p>
-                        <p className="text-[11px] text-slate-400 line-clamp-1">{dish.desc}</p>
-                        <div className="flex items-center gap-2.5 mt-1 font-mono text-[10px] text-slate-400">
-                          <span className="text-lime-400 font-bold">{dish.calories} kcal</span>
-                          <span>P: {dish.protein}g</span>
-                          <span>C: {dish.carbs}g</span>
-                          <span>F: {dish.fat}g</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          onAddMealEntry({
-                            id: `meal_uz_${Date.now()}_${dish.id}`,
-                            date: selectedDate,
-                            mealType: dish.meal as any,
-                            foodId: dish.id,
-                            foodName: dish.name,
-                            servings: 1,
-                            calories: dish.calories,
-                            protein: dish.protein,
-                            carbs: dish.carbs,
-                            fat: dish.fat,
-                          });
-                          setIsUzbekPlannerOpen(false);
-                        }}
-                        className="px-2.5 py-1.5 bg-[#17222F] hover:bg-emerald-400 hover:text-slate-950 text-emerald-400 font-bold text-[11px] rounded-lg border border-[#233346] transition-colors whitespace-nowrap active:scale-[0.98]"
+                  {uzbekDishesList.map((dish) => {
+                    const visual = getFoodVisual(dish.name);
+                    return (
+                      <div
+                        key={dish.id}
+                        className="p-3 rounded-xl bg-[#121922] border border-[#1C2633] hover:border-emerald-500/30 transition-all flex items-center justify-between gap-3"
                       >
-                        + Log
-                      </button>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 border ${visual.bg} ${visual.border}`}>
+                            <span>{visual.emoji}</span>
+                          </div>
+                          <div className="text-xs min-w-0">
+                            <p className="font-bold text-white truncate">{dish.name}</p>
+                            <p className="text-[11px] text-slate-400 line-clamp-1">{dish.desc}</p>
+                            <div className="flex items-center gap-2 mt-1 font-mono text-[10px]">
+                              <span className="text-lime-400 font-bold">{dish.calories} kcal</span>
+                              <span className="text-emerald-400 font-bold">P: {dish.protein}g</span>
+                              <span className="text-sky-400 font-bold">C: {dish.carbs}g</span>
+                              <span className="text-amber-400 font-bold">F: {dish.fat}g</span>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleLogIndividualUzbekDish(dish)}
+                          className={`px-3 py-1.5 ${
+                            loggedDishId === dish.id
+                              ? 'bg-emerald-400 text-slate-950 font-black'
+                              : 'bg-[#17222F] hover:bg-emerald-400 hover:text-slate-950 text-emerald-400 font-bold'
+                          } text-[11px] rounded-lg border border-[#233346] transition-colors whitespace-nowrap active:scale-[0.98] cursor-pointer shrink-0`}
+                        >
+                          {loggedDishId === dish.id ? '✓ Logged' : '+ Log'}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
