@@ -337,6 +337,21 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               <p className="text-[9px] sm:text-[10px] text-slate-400 text-right truncate">Target: {fatTarget}g</p>
             </div>
           </div>
+
+          {/* Quick link to AI Uzbek Diet Planner */}
+          <div className="mt-3.5 pt-3 border-t border-[#1B2533] flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs text-slate-300">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>AI Uzbek Athlete Diet Planner</span>
+            </div>
+            <button
+              onClick={() => onNavigateTab('nutrition')}
+              className="px-2.5 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 font-bold text-[11px] rounded-lg transition-colors flex items-center gap-1"
+            >
+              <span>Open Planner</span>
+              <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
         </div>
 
         {/* B. Training Summary Card */}

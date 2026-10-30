@@ -11,6 +11,8 @@ import {
   Flame,
   Globe,
   PlusCircle,
+  Sparkles,
+  ChefHat,
 } from 'lucide-react';
 
 interface NutritionModuleProps {
@@ -341,6 +343,36 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
             onChange={(e) => setSelectedDate(e.target.value)}
             className="bg-[#121A23] border border-[#233142] rounded-lg px-3 py-1.5 text-xs text-slate-200 font-mono"
           />
+        </div>
+      </div>
+
+      {/* AI Uzbek Athlete Diet Planner Banner Card */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-950/70 via-[#101822] to-teal-950/50 border border-emerald-500/30 p-4 sm:p-5 shadow-lg shadow-emerald-950/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[11px] font-bold uppercase tracking-wider border border-emerald-500/30">
+              <Sparkles className="w-3 h-3 text-emerald-300" />
+              <span>AI Diet Planner · Uzbekistan Cuisine</span>
+            </div>
+            <h2 className="text-base sm:text-lg font-extrabold text-white">
+              AI Uzbek Athlete Diet Planner
+            </h2>
+            <p className="text-xs text-slate-300 max-w-xl">
+              Authentic high-protein Central Asian dishes calibrated to your daily goal of{' '}
+              <span className="text-emerald-400 font-mono font-bold">{targetCalories} kcal</span> and{' '}
+              <span className="text-lime-400 font-mono font-bold">{proteinTarget}g protein</span> (Samarkand Osh, Kazan Shashlik, Lagman, Manti, Shorva, Suzma).
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              if (!generatedUzbekDay) handleGenerateUzbekPlan();
+              setIsUzbekPlannerOpen(true);
+            }}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-xs rounded-xl shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] whitespace-nowrap self-start sm:self-center"
+          >
+            <ChefHat className="w-4 h-4" />
+            <span>Open AI Diet Planner</span>
+          </button>
         </div>
       </div>
 
@@ -741,6 +773,145 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* AI UZBEK ATHLETE DIET PLANNER MODAL */}
+      {isUzbekPlannerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+          <div className="bg-[#0F161E] border border-emerald-500/30 rounded-2xl max-w-xl w-full p-4 sm:p-6 text-slate-100 shadow-2xl relative my-auto flex flex-col max-h-[88vh]">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-3 border-b border-[#1A2533]">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+                  <Sparkles className="w-3 h-3 text-emerald-300" />
+                  <span>AI Diet System</span>
+                </div>
+                <h2 className="text-base sm:text-lg font-extrabold text-white">Uzbek Athlete Diet Planner</h2>
+                <p className="text-xs text-slate-400">
+                  Target: <span className="text-emerald-400 font-mono font-bold">{targetCalories} kcal</span> · <span className="text-lime-400 font-mono font-bold">{proteinTarget}g Protein</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setIsUzbekPlannerOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg bg-[#16202B]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="overflow-y-auto flex-1 space-y-4 py-4 pr-1">
+              {/* Generator Trigger Card */}
+              <div className="flex items-center justify-between gap-2 p-3.5 rounded-xl bg-[#141E2A] border border-[#213042]">
+                <div className="text-xs">
+                  <p className="font-bold text-white">Generate Full Day Plan</p>
+                  <p className="text-[11px] text-slate-400">Calibrates 4 meals of authentic Uzbek cuisine to your exact macros</p>
+                </div>
+                <button
+                  onClick={handleGenerateUzbekPlan}
+                  className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs rounded-lg transition-all shadow-md shadow-emerald-500/20 flex items-center gap-1.5 whitespace-nowrap active:scale-[0.98]"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Generate</span>
+                </button>
+              </div>
+
+              {/* Generated Meals Blueprint */}
+              {generatedUzbekDay && (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Today's Uzbek Athlete Blueprint</span>
+                    </h3>
+                    <span className="text-[11px] text-slate-400 font-mono">
+                      {generatedUzbekDay.breakfast.calories +
+                        generatedUzbekDay.lunch.calories +
+                        generatedUzbekDay.dinner.calories +
+                        generatedUzbekDay.snack.calories}{' '}
+                      kcal total
+                    </span>
+                  </div>
+
+                  {[
+                    { label: 'Breakfast', dish: generatedUzbekDay.breakfast, color: 'text-amber-400' },
+                    { label: 'Lunch', dish: generatedUzbekDay.lunch, color: 'text-emerald-400' },
+                    { label: 'Dinner', dish: generatedUzbekDay.dinner, color: 'text-sky-400' },
+                    { label: 'Snack & Recovery', dish: generatedUzbekDay.snack, color: 'text-purple-400' },
+                  ].map(({ label, dish, color }) => (
+                    <div key={label} className="p-3 rounded-xl bg-[#131B24] border border-[#1E2938] space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className={`font-bold ${color}`}>{label}</span>
+                        <span className="font-mono font-bold text-white">{dish.calories} kcal</span>
+                      </div>
+                      <p className="text-xs font-bold text-slate-200">{dish.name}</p>
+                      <p className="text-[11px] text-slate-400">{dish.desc}</p>
+                      <div className="flex items-center gap-3 pt-1 text-[11px] font-mono text-slate-400">
+                        <span>P: <strong className="text-emerald-400">{dish.protein}g</strong></span>
+                        <span>C: <strong className="text-sky-400">{dish.carbs}g</strong></span>
+                        <span>F: <strong className="text-amber-400">{dish.fat}g</strong></span>
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    onClick={handleLogWholeUzbekDay}
+                    className="w-full py-2.5 bg-gradient-to-r from-emerald-400 to-lime-400 hover:from-emerald-300 hover:to-lime-300 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 mt-2 active:scale-[0.98]"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Log All 4 Meals to Selected Date ({selectedDate})</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Uzbek Dishes Library */}
+              <div className="pt-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  Individual Uzbek Athlete Dishes (1-Click Log)
+                </h3>
+                <div className="space-y-2">
+                  {uzbekDishesList.map((dish) => (
+                    <div
+                      key={dish.id}
+                      className="p-3 rounded-xl bg-[#121922] border border-[#1C2633] hover:border-emerald-500/30 transition-all flex items-center justify-between gap-3"
+                    >
+                      <div className="text-xs">
+                        <p className="font-bold text-white">{dish.name}</p>
+                        <p className="text-[11px] text-slate-400 line-clamp-1">{dish.desc}</p>
+                        <div className="flex items-center gap-2.5 mt-1 font-mono text-[10px] text-slate-400">
+                          <span className="text-lime-400 font-bold">{dish.calories} kcal</span>
+                          <span>P: {dish.protein}g</span>
+                          <span>C: {dish.carbs}g</span>
+                          <span>F: {dish.fat}g</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          onAddMealEntry({
+                            id: `meal_uz_${Date.now()}_${dish.id}`,
+                            date: selectedDate,
+                            mealType: dish.meal as any,
+                            foodId: dish.id,
+                            foodName: dish.name,
+                            servings: 1,
+                            calories: dish.calories,
+                            protein: dish.protein,
+                            carbs: dish.carbs,
+                            fat: dish.fat,
+                          });
+                          setIsUzbekPlannerOpen(false);
+                        }}
+                        className="px-2.5 py-1.5 bg-[#17222F] hover:bg-emerald-400 hover:text-slate-950 text-emerald-400 font-bold text-[11px] rounded-lg border border-[#233346] transition-colors whitespace-nowrap active:scale-[0.98]"
+                      >
+                        + Log
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
