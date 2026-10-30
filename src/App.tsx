@@ -45,6 +45,22 @@ export default function App() {
 
   // Mobile View Mode Switcher
   const [isMobileViewMode, setIsMobileViewMode] = useState(false);
+  const [isRealMobileDevice, setIsRealMobileDevice] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+      setIsRealMobileDevice(isMobile);
+      if (isMobile) {
+        setIsMobileViewMode(false); // Mobile devices are natively full-screen
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Payment Checkout Simulation State
   const [checkoutItem, setCheckoutItem] = useState<CheckoutItem | null>(null);
@@ -470,14 +486,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#05070A] text-slate-100 flex flex-col font-sans selection:bg-lime-500/20 selection:text-lime-300">
-      {/* MOBILE VIEW MODE (Phone Chassis Shell) */}
-      {isMobileViewMode ? (
+      {/* MOBILE VIEW MODE (Simulated Chassis Shell - for desktop users only) */}
+      {isMobileViewMode && !isRealMobileDevice ? (
         <div className="py-4 px-2 sm:px-4 flex flex-col items-center justify-center min-h-screen bg-[#05070A]">
           {/* Top Control Bar for Mobile View */}
           <div className="mb-3 flex items-center justify-between w-full max-w-[390px] bg-[#10151C] border border-[#202C3B] px-3.5 py-1.5 rounded-xl text-xs">
             <div className="flex items-center gap-1.5">
               <Smartphone className="w-3.5 h-3.5 text-lime-400" />
-              <span className="font-bold text-white text-[11px]">Mobile App Mode (390px)</span>
+              <span className="font-bold text-white text-[11px]">Simulated Mobile Frame (390px)</span>
             </div>
             <button
               onClick={() => setIsMobileViewMode(false)}
@@ -496,10 +512,11 @@ export default function App() {
               userName={userProfile.name}
               isMobileViewMode={isMobileViewMode}
               onToggleMobileView={() => setIsMobileViewMode(false)}
+              isRealMobile={false}
             />
 
             {/* Scrollable Interior Screen Body */}
-            <div className="flex-1 overflow-y-auto px-3 pt-3 pb-20 scrollbar-none">
+            <div className="flex-1 overflow-y-auto px-3 pt-3 pb-24 scrollbar-none">
               {renderScreenBody(true)}
             </div>
 
@@ -530,17 +547,18 @@ export default function App() {
           </div>
         </div>
       ) : (
-        /* STANDARD RESPONSIVE / REAL MOBILE DEVICE MODE */
-        <div className="min-h-screen flex flex-col bg-[#090D10] text-slate-100 pb-20">
+        /* NATIVE MOBILE EXPERIENCE ON REAL PHONES / RESPONSIVE DESKTOP */
+        <div className="min-h-screen flex flex-col bg-[#090D10] text-slate-100 pb-24">
           <TopBar
             onOpenProfile={() => handleSwitchTab('profile')}
             userName={userProfile.name}
             isMobileViewMode={isMobileViewMode}
             onToggleMobileView={() => setIsMobileViewMode(true)}
+            isRealMobile={isRealMobileDevice}
           />
 
-          <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-4 pt-3 sm:pt-6">
-            {renderScreenBody(false)}
+          <main className={`flex-1 w-full mx-auto ${isRealMobileDevice ? 'px-3 pt-2 max-w-lg' : 'max-w-6xl px-3 sm:px-4 pt-3 sm:pt-6'}`}>
+            {renderScreenBody(isRealMobileDevice)}
           </main>
 
           {/* Floating AI Coach Action Button */}

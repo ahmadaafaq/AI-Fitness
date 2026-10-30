@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   UserProfile,
   WorkoutSession,
@@ -21,6 +21,8 @@ import {
   Activity,
   Camera,
   Shield,
+  Calculator,
+  Info,
 } from 'lucide-react';
 
 interface HomeDashboardProps {
@@ -414,9 +416,9 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         </div>
       </div>
 
-      {/* C. Body Metrics & E. Weekly Activity Chart */}
-      <div className={`grid gap-4 ${isMobileMode ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
-        {/* Body Metrics Card */}
+      {/* C. Body Weight, BMI Calculator & E. Weekly Activity Chart */}
+      <div className={`grid gap-4 ${isMobileMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+        {/* 1. Body Metrics Card */}
         <div className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -475,6 +477,102 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           >
             View Weight History & Trends <TrendingUp className="w-3.5 h-3.5" />
           </button>
+        </div>
+
+        {/* 2. Interactive Sports Science BMI & Body Composition Calculator */}
+        <div className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-lime-500/10 text-lime-400">
+                  <Calculator className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold tracking-tight text-white">BMI Calculator</h2>
+                  <p className="text-[10px] text-slate-400">Height: {userProfile.heightCm || 180} cm · Weight: {currentWeight} kg</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-lime-500/10 text-lime-400 font-bold border border-lime-500/20">
+                Formula Quetelet
+              </span>
+            </div>
+
+            {/* Calculated Value Display */}
+            {(() => {
+              const hM = (userProfile.heightCm || 180) / 100;
+              const bmi = Math.round((currentWeight / (hM * hM)) * 10) / 10;
+              let label = 'Optimal / Athletic';
+              let badgeColor = 'text-lime-400 bg-lime-500/10 border-lime-500/20';
+              let note = 'Normal healthy athletic range. Excellent power-to-weight ratio.';
+
+              if (bmi < 18.5) {
+                label = 'Underweight';
+                badgeColor = 'text-sky-400 bg-sky-500/10 border-sky-500/20';
+                note = 'Caloric surplus and hypertrophy resistance training recommended.';
+              } else if (bmi >= 25 && bmi < 30) {
+                label = 'Athletic / Overweight';
+                badgeColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                note = 'Muscular strength athletes often fall here due to high lean mass density.';
+              } else if (bmi >= 30) {
+                label = 'High Risk';
+                badgeColor = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+                note = 'Structured progressive deficit and aerobic conditioning advised.';
+              }
+
+              const normalMinKg = Math.round(18.5 * hM * hM * 10) / 10;
+              const normalMaxKg = Math.round(24.9 * hM * hM * 10) / 10;
+
+              return (
+                <div className="space-y-3">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <p className="text-[11px] text-slate-400">Mass Index Score</p>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-white font-mono tabular-nums">{bmi}</span>
+                        <span className="text-xs text-slate-400">kg/m²</span>
+                      </div>
+                    </div>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${badgeColor}`}>
+                      {label}
+                    </span>
+                  </div>
+
+                  {/* Gradient BMI Gauge */}
+                  <div className="space-y-1">
+                    <div className="h-2 w-full rounded-full bg-gradient-to-r from-sky-500 via-lime-400 via-amber-400 to-rose-500 relative overflow-hidden">
+                      {/* Marker needle */}
+                      <div
+                        className="absolute top-0 bottom-0 w-1 bg-white shadow-md transition-all duration-300"
+                        style={{
+                          left: `${Math.min(95, Math.max(5, ((bmi - 15) / 20) * 100))}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[9px] text-slate-500 font-mono">
+                      <span>18.5 Under</span>
+                      <span className="text-lime-400 font-semibold">18.5 - 24.9 Optimal</span>
+                      <span>25+ High</span>
+                    </div>
+                  </div>
+
+                  {/* Athlete Context Note */}
+                  <div className="p-2.5 rounded-xl bg-[#141B23] border border-[#212C3B] text-[11px] text-slate-300 space-y-1">
+                    <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-semibold">
+                      <Info className="w-3 h-3 text-lime-400 shrink-0" />
+                      <span>Ideal Weight for {userProfile.heightCm || 180} cm:</span>
+                      <span className="font-mono text-white font-bold">{normalMinKg} – {normalMaxKg} kg</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 leading-tight">{note}</p>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-[#1B2430] flex items-center justify-between text-[11px] text-slate-400">
+            <span>Height: {userProfile.heightCm || 180} cm</span>
+            <span className="text-lime-400 font-mono font-semibold">Formula: Metric</span>
+          </div>
         </div>
 
         {/* Weekly Activity Bar Chart */}

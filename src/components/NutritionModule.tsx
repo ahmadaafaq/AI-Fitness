@@ -42,6 +42,15 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
   const [isSearchingOnline, setIsSearchingOnline] = useState(false);
   const [activeTab, setActiveTab] = useState<'search' | 'favorites' | 'custom'>('search');
 
+  // AI Uzbek Diet Planner State
+  const [isUzbekPlannerOpen, setIsUzbekPlannerOpen] = useState(false);
+  const [generatedUzbekDay, setGeneratedUzbekDay] = useState<{
+    breakfast: { name: string; calories: number; protein: number; carbs: number; fat: number; desc: string };
+    lunch: { name: string; calories: number; protein: number; carbs: number; fat: number; desc: string };
+    dinner: { name: string; calories: number; protein: number; carbs: number; fat: number; desc: string };
+    snack: { name: string; calories: number; protein: number; carbs: number; fat: number; desc: string };
+  } | null>(null);
+
   // Selected food for logging
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [servingMultiplier, setServingMultiplier] = useState<number>(1);
@@ -57,6 +66,151 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
     carbs: 10,
     fat: 3,
   });
+
+  const uzbekDishesList = [
+    {
+      id: 'uz_osh',
+      name: 'Samarkand Osh / Plov (Athlete Cut)',
+      desc: 'Lean beef sirloin, devzira rice, yellow carrots, chickpeas & garlic',
+      meal: 'lunch',
+      calories: 580,
+      protein: 42,
+      carbs: 66,
+      fat: 16,
+    },
+    {
+      id: 'uz_shashlik',
+      name: 'Kazan Beef Shashlik (3 Skewers)',
+      desc: 'Tender spiced marinated beef sirloin cubes with fresh onions & sumac',
+      meal: 'dinner',
+      calories: 440,
+      protein: 52,
+      carbs: 6,
+      fat: 15,
+    },
+    {
+      id: 'uz_lagman',
+      name: 'Uighur / Tashkent Lagman Broth',
+      desc: 'Hand-pulled durum wheat noodles, lean beef strips, sweet bell peppers & herbs',
+      meal: 'lunch',
+      calories: 520,
+      protein: 38,
+      carbs: 70,
+      fat: 11,
+    },
+    {
+      id: 'uz_manti',
+      name: 'Steamed Manti Dumplings (4 pcs)',
+      desc: 'Thin hand-rolled pastry filled with lean minced beef, pumpkin cubes & cumin',
+      meal: 'dinner',
+      calories: 460,
+      protein: 34,
+      carbs: 54,
+      fat: 12,
+    },
+    {
+      id: 'uz_shorva',
+      name: 'Kainama Shorva (Bone Collagen Stew)',
+      desc: 'Slow-simmered beef shank with potatoes, carrots and restorative mineral broth',
+      meal: 'dinner',
+      calories: 390,
+      protein: 40,
+      carbs: 26,
+      fat: 12,
+    },
+    {
+      id: 'uz_chuchvara',
+      name: 'Chuchvara Soup in Dill Broth',
+      desc: 'Micro dumplings filled with lean beef served in restorative beef broth with herbs',
+      meal: 'lunch',
+      calories: 410,
+      protein: 30,
+      carbs: 48,
+      fat: 10,
+    },
+    {
+      id: 'uz_suzma',
+      name: 'Suzma with Fresh Herbs & Radish',
+      desc: 'Probiotic strained sour milk curd (high casein protein) with fresh greens',
+      meal: 'breakfast',
+      calories: 190,
+      protein: 24,
+      carbs: 8,
+      fat: 4,
+    },
+    {
+      id: 'uz_non_egg',
+      name: 'Tandir Non with Fried Eggs & Kaimak',
+      desc: 'Crisp hot tandoor flatbread quarter with 3 sunny eggs and fresh herbs',
+      meal: 'breakfast',
+      calories: 430,
+      protein: 26,
+      carbs: 38,
+      fat: 18,
+    },
+  ];
+
+  const handleGenerateUzbekPlan = () => {
+    setGeneratedUzbekDay({
+      breakfast: {
+        name: 'Suzma Probiotic Dip with 2 Boiled Eggs & Half Tandir Non',
+        desc: 'High bioavailability morning protein with slow-digesting complex carbs',
+        calories: 450,
+        protein: 36,
+        carbs: 42,
+        fat: 14,
+      },
+      lunch: {
+        name: 'Samarkand Osh / Plov (Lean Sirloin + Devzira Rice)',
+        desc: 'Rich in potassium, iron, and sustained muscle glycogen refueling',
+        calories: 620,
+        protein: 44,
+        carbs: 72,
+        fat: 16,
+      },
+      dinner: {
+        name: 'Kazan Spiced Beef Shashlik with Achichuk Tomato Onion Salad',
+        desc: 'High-leucine anabolic recovery dinner without excess starch',
+        calories: 480,
+        protein: 54,
+        carbs: 12,
+        fat: 16,
+      },
+      snack: {
+        name: 'Chuchvara Clear Broth + Samarkand Dried Apricots & Walnuts',
+        desc: 'Joint collagen support and intra-workout healthy fats',
+        calories: 320,
+        protein: 18,
+        carbs: 38,
+        fat: 10,
+      },
+    });
+  };
+
+  const handleLogWholeUzbekDay = () => {
+    if (!generatedUzbekDay) return;
+    const items = [
+      { mealType: 'breakfast', item: generatedUzbekDay.breakfast },
+      { mealType: 'lunch', item: generatedUzbekDay.lunch },
+      { mealType: 'dinner', item: generatedUzbekDay.dinner },
+      { mealType: 'snack', item: generatedUzbekDay.snack },
+    ];
+    items.forEach(({ mealType, item }, idx) => {
+      onAddMealEntry({
+        id: `meal_uzbek_${Date.now()}_${idx}`,
+        date: selectedDate,
+        mealType: mealType as any,
+        foodId: `uz_dish_${idx}`,
+        foodName: item.name,
+        servings: 1,
+        calories: item.calories,
+        protein: item.protein,
+        carbs: item.carbs,
+        fat: item.fat,
+      });
+    });
+    setIsUzbekPlannerOpen(false);
+  };
 
   // Calculate totals for selected date
   const dateMeals = mealEntries.filter((m) => m.date === selectedDate);

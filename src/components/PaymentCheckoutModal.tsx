@@ -22,12 +22,14 @@ interface PaymentCheckoutModalProps {
   item: CheckoutItem;
   onClose: () => void;
   onPaymentSuccess: (item: CheckoutItem) => void;
+  isMobileMode?: boolean;
 }
 
 export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   item,
   onClose,
   onPaymentSuccess,
+  isMobileMode = false,
 }) => {
   const [selectedMethod, setSelectedMethod] = useState<'apple' | 'google' | 'card' | 'click' | 'payme'>('apple');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -64,8 +66,8 @@ export const PaymentCheckoutModal: React.FC<PaymentCheckoutModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md overflow-hidden">
-      <div className="bg-[#10161D] border border-[#212C3B] rounded-2xl w-full max-w-[365px] sm:max-w-md max-h-[88vh] flex flex-col p-4 sm:p-5 text-slate-100 shadow-2xl relative overflow-hidden">
+    <div className={`${isMobileMode ? 'absolute inset-0' : 'fixed inset-0'} z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/90 backdrop-blur-md overflow-hidden`}>
+      <div className="bg-[#10161D] border border-[#212C3B] rounded-2xl w-full max-w-[345px] sm:max-w-md max-h-[92%] flex flex-col p-3.5 sm:p-5 text-slate-100 shadow-2xl relative overflow-hidden">
         {!isSuccess && (
           <button
             onClick={onClose}

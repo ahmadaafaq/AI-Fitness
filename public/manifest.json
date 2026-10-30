@@ -1,0 +1,18 @@
+{
+  "name": "Kinetix AI - Personal Fitness & Nutrition Coach",
+  "short_name": "Kinetix AI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090D10",
+  "theme_color": "#090D10",
+  "orientation": "portrait-primary",
+  "description": "Production-grade personal fitness coaching platform with intelligent workout tracking, deterministic autoregulation, comprehensive nutrition logging, and recovery telemetry.",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

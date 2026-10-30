@@ -5,13 +5,34 @@
   :root {
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+    --sar: env(safe-area-inset-right, 0px);
   }
 
-  body {
+  html, body {
     font-family: var(--font-sans);
     background-color: #090D10;
     color: #F1F5F9;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
+}
+
+/* Safe Area Inset Utility Classes for Native Mobile Experience */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 0px);
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+}
+
+.bottom-safe-nav {
+  bottom: 0px;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 10px);
 }
 
 /* Scoped Overrides for Mobile Phone Chassis (390px frame inside desktop viewport) */
@@ -134,10 +155,109 @@
     transform: translateY(0px);
   }
   45% {
-    transform: translateY(24px);
+    transform: translateY(22px);
   }
   55% {
-    transform: translateY(24px);
+    transform: translateY(22px);
+  }
+}
+
+@keyframes inclinePressMotion {
+  0%, 100% {
+    transform: translate(0px, 0px);
+  }
+  50% {
+    transform: translate(-10px, 18px);
+  }
+}
+
+@keyframes dipsMotion {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(20px);
+  }
+}
+
+@keyframes flyeMotionLeft {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(38deg);
+  }
+}
+
+@keyframes flyeMotionRight {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-38deg);
+  }
+}
+
+@keyframes overheadPressMotion {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(22px);
+  }
+}
+
+@keyframes rowMotion {
+  0%, 100% {
+    transform: translate(0px, 0px);
+  }
+  50% {
+    transform: translate(0px, 20px);
+  }
+}
+
+@keyframes facePullMotion {
+  0%, 100% {
+    transform: translate(0px, 0px);
+  }
+  50% {
+    transform: translate(18px, 6px);
+  }
+}
+
+@keyframes lateralRaiseLeft {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-55deg);
+  }
+}
+
+@keyframes lateralRaiseRight {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(55deg);
+  }
+}
+
+@keyframes rearDeltLeft {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-45deg);
+  }
+}
+
+@keyframes rearDeltRight {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(45deg);
   }
 }
 
@@ -177,12 +297,39 @@
   }
 }
 
+@keyframes tricepPushdownMotion {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(65deg);
+  }
+}
+
 @keyframes pullupMotion {
   0%, 100% {
     transform: translateY(18px);
   }
   50% {
     transform: translateY(-8px);
+  }
+}
+
+@keyframes calfRaiseMotion {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes crunchMotion {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(24deg);
   }
 }
 

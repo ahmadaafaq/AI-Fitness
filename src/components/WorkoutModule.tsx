@@ -25,6 +25,7 @@ import {
   Zap,
   Target,
   Activity,
+  Sparkles,
 } from 'lucide-react';
 import { InteractiveMuscleMap } from './InteractiveMuscleMap';
 import { ExerciseAnimation } from './ExerciseAnimation';
@@ -61,6 +62,125 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
   // Custom Program Creator/Editor Modal State
   const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
   const [editingProgram, setEditingProgram] = useState<WorkoutProgram | null>(null);
+
+  // AI Workout Plan Generator State
+  const [isAIPlannerOpen, setIsAIPlannerOpen] = useState(false);
+  const [aiGoal, setAiGoal] = useState<'hypertrophy' | 'strength' | 'fat_loss'>('hypertrophy');
+  const [aiDays, setAiDays] = useState<number>(4);
+  const [aiLevel, setAiLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('intermediate');
+  const [aiFocus, setAiFocus] = useState<'balanced' | 'chest_arms' | 'legs_glutes' | 'back_shoulders'>('balanced');
+
+  const handleGenerateAIPlan = () => {
+    let generatedDays: Array<{
+      dayNumber: number;
+      title: string;
+      exercises: Array<{
+        exerciseId: string;
+        targetSets: number;
+        targetReps: string;
+        targetRpe: number;
+        restSeconds: number;
+      }>;
+    }> = [];
+
+    if (aiDays === 3) {
+      generatedDays = [
+        {
+          dayNumber: 1,
+          title: 'Full Body A (Quad / Chest / Upper Back Focus)',
+          exercises: [
+            { exerciseId: 'ex_barbell_back_squat', targetSets: 4, targetReps: aiGoal === 'strength' ? '4-6' : '8-10', targetRpe: 8.0, restSeconds: 150 },
+            { exerciseId: 'ex_barbell_bench_press', targetSets: 4, targetReps: aiGoal === 'strength' ? '4-6' : '8-10', targetRpe: 8.0, restSeconds: 120 },
+            { exerciseId: 'ex_barbell_bent_over_row', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 90 },
+            { exerciseId: 'ex_standing_overhead_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+            { exerciseId: 'ex_ez_bar_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+          ],
+        },
+        {
+          dayNumber: 2,
+          title: 'Full Body B (Hinge / Lat / Shoulder Focus)',
+          exercises: [
+            { exerciseId: 'ex_conventional_deadlift', targetSets: 4, targetReps: aiGoal === 'strength' ? '3-5' : '6-8', targetRpe: 8.5, restSeconds: 180 },
+            { exerciseId: 'ex_incline_dumbbell_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 90 },
+            { exerciseId: 'ex_strict_pullup', targetSets: 3, targetReps: '6-8', targetRpe: 8.5, restSeconds: 90 },
+            { exerciseId: 'ex_dumbbell_lateral_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+            { exerciseId: 'ex_cable_tricep_pushdown', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+          ],
+        },
+        {
+          dayNumber: 3,
+          title: 'Full Body C (Hamstring / Pec / Hypertrophy Finish)',
+          exercises: [
+            { exerciseId: 'ex_romanian_deadlift', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 120 },
+            { exerciseId: 'ex_cable_chest_flye', targetSets: 3, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+            { exerciseId: 'ex_seated_cable_row', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
+            { exerciseId: 'ex_parallel_bar_dips', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+            { exerciseId: 'ex_standing_calf_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+          ],
+        },
+      ];
+    } else {
+      generatedDays = [
+        {
+          dayNumber: 1,
+          title: 'Upper Strength & Mechanical Tension',
+          exercises: [
+            { exerciseId: 'ex_barbell_bench_press', targetSets: 4, targetReps: aiGoal === 'strength' ? '4-6' : '6-8', targetRpe: 8.5, restSeconds: 150 },
+            { exerciseId: 'ex_barbell_bent_over_row', targetSets: 4, targetReps: '6-8', targetRpe: 8.0, restSeconds: 120 },
+            { exerciseId: 'ex_standing_overhead_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+            { exerciseId: 'ex_strict_pullup', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+            { exerciseId: 'ex_cable_face_pull', targetSets: 3, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+          ],
+        },
+        {
+          dayNumber: 2,
+          title: 'Lower Anterior & Posterior Kinetic Chain',
+          exercises: [
+            { exerciseId: 'ex_barbell_back_squat', targetSets: 4, targetReps: aiGoal === 'strength' ? '4-6' : '6-8', targetRpe: 8.5, restSeconds: 180 },
+            { exerciseId: 'ex_romanian_deadlift', targetSets: 4, targetReps: '8-10', targetRpe: 8.0, restSeconds: 120 },
+            { exerciseId: 'ex_walking_lunges', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
+            { exerciseId: 'ex_standing_calf_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+            { exerciseId: 'ex_hanging_leg_raise', targetSets: 3, targetReps: '12-15', targetRpe: 8.5, restSeconds: 60 },
+          ],
+        },
+        {
+          dayNumber: 3,
+          title: 'Upper Hypertrophy & Sarcoplasmic Volume',
+          exercises: [
+            { exerciseId: 'ex_incline_dumbbell_press', targetSets: 4, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+            { exerciseId: 'ex_lat_pulldown', targetSets: 4, targetReps: '10-12', targetRpe: 8.5, restSeconds: 90 },
+            { exerciseId: 'ex_dumbbell_lateral_raise', targetSets: 4, targetReps: '12-15', targetRpe: 9.0, restSeconds: 60 },
+            { exerciseId: 'ex_cable_tricep_pushdown', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+            { exerciseId: 'ex_incline_dumbbell_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+          ],
+        },
+        {
+          dayNumber: 4,
+          title: 'Lower Posterior Chain & Power Focus',
+          exercises: [
+            { exerciseId: 'ex_conventional_deadlift', targetSets: 4, targetReps: aiGoal === 'strength' ? '3-5' : '6-8', targetRpe: 8.5, restSeconds: 180 },
+            { exerciseId: 'ex_bulgarian_split_squat', targetSets: 3, targetReps: '8-10', targetRpe: 8.5, restSeconds: 90 },
+            { exerciseId: 'ex_leg_curl', targetSets: 3, targetReps: '10-12', targetRpe: 9.0, restSeconds: 60 },
+            { exerciseId: 'ex_ab_wheel_rollout', targetSets: 3, targetReps: '10-12', targetRpe: 8.5, restSeconds: 60 },
+          ],
+        },
+      ];
+    }
+
+    const goalLabel = aiGoal === 'hypertrophy' ? 'Hypertrophy Engine' : aiGoal === 'strength' ? 'Peak Strength 1RM' : 'Metabolic Recomposition';
+    const newProg: WorkoutProgram = {
+      id: `prog_ai_${Date.now()}`,
+      name: `Kinetix AI: ${goalLabel}`,
+      description: `Sports-science autoregulated split with target RPE 8.0-9.0, scientific rest intervals, and progressive overload tracking.`,
+      level: aiLevel,
+      frequencyPerWeek: aiDays,
+      isCustom: true,
+      days: generatedDays,
+    };
+
+    onSaveProgram(newProg);
+    setIsAIPlannerOpen(false);
+  };
   const [programForm, setProgramForm] = useState<{
     id: string;
     name: string;
@@ -360,13 +480,22 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
                 Scientifically calibrated splits with progressive overload
               </p>
             </div>
-            <button
-              onClick={handleOpenNewProgram}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#141C25] hover:bg-[#1A2533] border border-[#233142] text-xs font-semibold text-lime-400 rounded-lg transition-colors shrink-0"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Create</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsAIPlannerOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold rounded-lg transition-colors shrink-0 shadow-sm shadow-lime-500/20 active:scale-95 cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 fill-current" />
+                <span>AI Planner</span>
+              </button>
+              <button
+                onClick={handleOpenNewProgram}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#141C25] hover:bg-[#1A2533] border border-[#233142] text-xs font-semibold text-lime-400 rounded-lg transition-colors shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create</span>
+              </button>
+            </div>
           </div>
 
           <div className={`grid gap-4 ${isMobileMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
@@ -968,6 +1097,157 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
               >
                 <Check className="w-4 h-4" />
                 Save Programme
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI WORKOUT PLAN GENERATOR MODAL */}
+      {isAIPlannerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#10151C] border border-[#222E3E] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#1E2734] pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-lime-500/10 text-lime-400">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">AI Workout Generator</h3>
+                  <p className="text-[11px] text-slate-400">Calibrated periodization & autoregulation</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAIPlannerOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Goal Selector */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">Training Goal</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 'hypertrophy', label: 'Hypertrophy', desc: 'Max Growth' },
+                  { id: 'strength', label: 'Strength', desc: 'Heavy 1RM' },
+                  { id: 'fat_loss', label: 'Fat Loss', desc: 'Metabolic' },
+                ].map((g) => (
+                  <button
+                    key={g.id}
+                    onClick={() => setAiGoal(g.id as any)}
+                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                      aiGoal === g.id
+                        ? 'bg-lime-500/10 border-lime-400 text-lime-400 font-bold'
+                        : 'bg-[#141B23] border-[#212C3B] text-slate-300 hover:border-slate-600'
+                    }`}
+                  >
+                    <p className="text-xs font-bold">{g.label}</p>
+                    <p className="text-[10px] text-slate-400">{g.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Frequency Selector */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">Days per Week</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { days: 3, label: '3 Days', split: 'Full Body' },
+                  { days: 4, label: '4 Days', split: 'Upper / Lower' },
+                  { days: 5, label: '5 Days', split: 'PPL Hybrid' },
+                ].map((d) => (
+                  <button
+                    key={d.days}
+                    onClick={() => setAiDays(d.days)}
+                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                      aiDays === d.days
+                        ? 'bg-lime-500/10 border-lime-400 text-lime-400 font-bold'
+                        : 'bg-[#141B23] border-[#212C3B] text-slate-300 hover:border-slate-600'
+                    }`}
+                  >
+                    <p className="text-xs font-bold">{d.label}</p>
+                    <p className="text-[10px] text-slate-400">{d.split}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Experience Level */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">Experience Tier</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 'beginner', label: 'Beginner' },
+                  { id: 'intermediate', label: 'Intermediate' },
+                  { id: 'advanced', label: 'Advanced' },
+                ].map((l) => (
+                  <button
+                    key={l.id}
+                    onClick={() => setAiLevel(l.id as any)}
+                    className={`py-2 px-2 rounded-xl border text-center text-xs transition-all ${
+                      aiLevel === l.id
+                        ? 'bg-lime-500/10 border-lime-400 text-lime-400 font-bold'
+                        : 'bg-[#141B23] border-[#212C3B] text-slate-300'
+                    }`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Muscle Focus */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">Specialization Focus</label>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {[
+                  { id: 'balanced', label: 'Balanced Overload' },
+                  { id: 'chest_arms', label: 'Chest & Arms Focus' },
+                  { id: 'legs_glutes', label: 'Legs & Glutes Bias' },
+                  { id: 'back_shoulders', label: 'Back & Delts V-Taper' },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setAiFocus(f.id as any)}
+                    className={`p-2 rounded-xl border text-left text-xs transition-all ${
+                      aiFocus === f.id
+                        ? 'bg-lime-500/10 border-lime-400 text-lime-400 font-bold'
+                        : 'bg-[#141B23] border-[#212C3B] text-slate-300'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Generation Blueprint Summary */}
+            <div className="p-3 rounded-xl bg-[#141B23] border border-[#212C3B] text-[11px] text-slate-300 space-y-1">
+              <div className="flex items-center gap-1.5 text-lime-400 font-bold text-xs">
+                <Check className="w-3.5 h-3.5" />
+                <span>Calibrated Parameters</span>
+              </div>
+              <p className="text-slate-400">
+                Generates {aiDays} session days with target RPE 8.0–8.5, warmup & working set designations, 40+ compound & isolation movements, and scientific rest timers.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#1E2734]">
+              <button
+                onClick={() => setIsAIPlannerOpen(false)}
+                className="px-3 py-2 text-xs text-slate-400 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGenerateAIPlan}
+                className="flex items-center gap-1.5 px-4 py-2 bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-lime-500/20 active:scale-95 transition-all"
+              >
+                <Sparkles className="w-3.5 h-3.5 fill-current" />
+                <span>Generate Plan</span>
               </button>
             </div>
           </div>

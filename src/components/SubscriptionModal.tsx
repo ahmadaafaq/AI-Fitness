@@ -6,12 +6,14 @@ interface SubscriptionModalProps {
   onClose: () => void;
   onOpenCheckout: (item: CheckoutItem) => void;
   currentTier?: 'free' | 'premium' | 'pro';
+  isMobileMode?: boolean;
 }
 
 export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   onClose,
   onOpenCheckout,
   currentTier = 'free',
+  isMobileMode = false,
 }) => {
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'premium' | 'pro'>(
     currentTier === 'free' ? 'premium' : currentTier
@@ -99,8 +101,8 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md overflow-hidden">
-      <div className="bg-[#10161D] border border-[#212C3B] rounded-2xl w-full max-w-[365px] sm:max-w-xl md:max-w-3xl max-h-[88vh] flex flex-col p-4 sm:p-6 text-slate-100 shadow-2xl relative overflow-hidden">
+    <div className={`${isMobileMode ? 'absolute inset-0' : 'fixed inset-0'} z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/90 backdrop-blur-md overflow-hidden`}>
+      <div className="bg-[#10161D] border border-[#212C3B] rounded-2xl w-full max-w-[345px] sm:max-w-xl md:max-w-3xl max-h-[92%] flex flex-col p-3.5 sm:p-6 text-slate-100 shadow-2xl relative overflow-hidden">
         {/* Close Button */}
         <button
           onClick={onClose}

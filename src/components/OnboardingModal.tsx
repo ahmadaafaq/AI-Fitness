@@ -13,12 +13,14 @@ interface OnboardingModalProps {
   initialProfile: UserProfile;
   onComplete: (updatedProfile: UserProfile) => void;
   onDismiss: () => void;
+  isMobileMode?: boolean;
 }
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   initialProfile,
   onComplete,
   onDismiss,
+  isMobileMode = false,
 }) => {
   const [step, setStep] = useState<number>(1);
   const [formData, setFormData] = useState({
@@ -83,8 +85,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="bg-[#10161D] border border-[#212C3B] rounded-2xl max-w-xl w-full p-6 text-slate-100 shadow-2xl relative my-8">
+    <div className={`${isMobileMode ? 'absolute inset-0' : 'fixed inset-0'} z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto`}>
+      <div className="bg-[#10161D] border border-[#212C3B] rounded-2xl w-full max-w-[345px] sm:max-w-xl max-h-[92%] overflow-y-auto p-4 sm:p-6 text-slate-100 shadow-2xl relative my-auto">
         {/* Step Indicator Header */}
         <div className="flex items-center justify-between border-b border-[#1F2A38] pb-4 mb-6">
           <div>
