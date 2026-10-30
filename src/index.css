@@ -1,0 +1,197 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #090D10;
+    color: #F1F5F9;
+  }
+}
+
+/* Scoped Overrides for Mobile Phone Chassis (390px frame inside desktop viewport) */
+.mobile-app-mode .grid-cols-1,
+.mobile-app-mode .sm\:grid-cols-2,
+.mobile-app-mode .sm\:grid-cols-3,
+.mobile-app-mode .sm\:grid-cols-4,
+.mobile-app-mode .sm\:grid-cols-5,
+.mobile-app-mode .md\:grid-cols-2,
+.mobile-app-mode .md\:grid-cols-3,
+.mobile-app-mode .lg\:grid-cols-2,
+.mobile-app-mode .lg\:grid-cols-3,
+.mobile-app-mode .lg\:grid-cols-4 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+/* Retain explicit 2-column and 3-column micro grids inside mobile mode */
+.mobile-app-mode .mobile-grid-2,
+.mobile-app-mode .grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.mobile-app-mode .mobile-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.mobile-app-mode .mobile-stack-flex {
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+
+/* Custom scrollbars for dark mode */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0D1217;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #232D38;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #344252;
+}
+
+/* Tabular numerals for fitness metrics and tables */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Styled Markdown typography for AI Coaching and advice */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  color: #A3E635;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  margin-top: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.markdown-content h4 {
+  color: #F8FAFC;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.markdown-content strong,
+.markdown-content b {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.markdown-content ul {
+  list-style-type: disc;
+  padding-left: 1.2rem;
+  margin-top: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content ol {
+  list-style-type: decimal;
+  padding-left: 1.2rem;
+  margin-top: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content li {
+  margin-bottom: 0.35rem;
+  color: #E2E8F0;
+  line-height: 1.55;
+}
+
+.markdown-content p {
+  margin-bottom: 0.45rem;
+  line-height: 1.55;
+  color: #E2E8F0;
+}
+
+.markdown-content code {
+  font-family: var(--font-mono);
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.25rem;
+  color: #A3E635;
+  font-size: 0.85em;
+}
+
+/* Biomechanical Exercise Keyframe Animations */
+@keyframes benchBarMotion {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  45% {
+    transform: translateY(24px);
+  }
+  55% {
+    transform: translateY(24px);
+  }
+}
+
+@keyframes squatMotion {
+  0%, 100% {
+    transform: translateY(0px) scaleY(1);
+  }
+  50% {
+    transform: translateY(22px) scaleY(0.85);
+  }
+}
+
+@keyframes lungeMotion {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(18px);
+  }
+}
+
+@keyframes deadliftMotion {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(28px);
+  }
+}
+
+@keyframes curlMotion {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-65deg);
+  }
+}
+
+@keyframes pullupMotion {
+  0%, 100% {
+    transform: translateY(18px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes genericMotion {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(16px);
+  }
+}
+

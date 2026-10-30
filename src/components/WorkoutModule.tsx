@@ -1,0 +1,978 @@
+import React, { useState } from 'react';
+import {
+  EquipmentType,
+  Exercise,
+  MuscleGroup,
+  WorkoutProgram,
+  WorkoutSession,
+} from '../types';
+import {
+  Search,
+  Plus,
+  Dumbbell,
+  Clock,
+  Play,
+  Flame,
+  ChevronRight,
+  Info,
+  Calendar,
+  Layers,
+  Edit2,
+  Trash2,
+  X,
+  Check,
+  Trophy,
+  Zap,
+  Target,
+  Activity,
+} from 'lucide-react';
+import { InteractiveMuscleMap } from './InteractiveMuscleMap';
+import { ExerciseAnimation } from './ExerciseAnimation';
+
+interface WorkoutModuleProps {
+  programs: WorkoutProgram[];
+  exercises: Exercise[];
+  history: WorkoutSession[];
+  isMobileMode?: boolean;
+  onStartProgramDay: (program: WorkoutProgram, dayIndex: number) => void;
+  onStartEmptyWorkout: () => void;
+  onSaveProgram: (program: WorkoutProgram) => void;
+  onDeleteSession: (id: string) => void;
+}
+
+export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
+  programs,
+  exercises,
+  history,
+  isMobileMode = false,
+  onStartProgramDay,
+  onStartEmptyWorkout,
+  onSaveProgram,
+  onDeleteSession,
+}) => {
+  const [activeTab, setActiveTab] = useState<'programs' | 'library' | 'anatomy' | 'history'>('programs');
+
+  // Exercise Library Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMuscle, setSelectedMuscle] = useState<string>('All');
+  const [selectedEquipment, setSelectedEquipment] = useState<string>('All');
+  const [selectedExerciseModal, setSelectedExerciseModal] = useState<Exercise | null>(null);
+
+  // Custom Program Creator/Editor Modal State
+  const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
+  const [editingProgram, setEditingProgram] = useState<WorkoutProgram | null>(null);
+  const [programForm, setProgramForm] = useState<{
+    id: string;
+    name: string;
+    description: string;
+    level: 'beginner' | 'intermediate' | 'advanced';
+    frequencyPerWeek: number;
+    days: Array<{
+      dayNumber: number;
+      title: string;
+      exercises: Array<{
+        exerciseId: string;
+        targetSets: number;
+        targetReps: string;
+        targetRpe: number;
+        restSeconds: number;
+      }>;
+    }>;
+  }>({
+    id: '',
+    name: '',
+    description: '',
+    level: 'intermediate',
+    frequencyPerWeek: 4,
+    days: [
+      {
+        dayNumber: 1,
+        title: 'Day 1 - Push & Hypertrophy',
+        exercises: [
+          { exerciseId: 'ex_barbell_bench_press', targetSets: 4, targetReps: '8-10', targetRpe: 8.0, restSeconds: 120 },
+        ],
+      },
+    ],
+  });
+
+  const muscleGroups: MuscleGroup[] = [
+    'Chest',
+    'Back',
+    'Shoulders',
+    'Biceps',
+    'Triceps',
+    'Legs',
+    'Glutes',
+    'Core',
+    'Cardio',
+  ];
+
+  const equipmentTypes: EquipmentType[] = [
+    'Barbell',
+    'Dumbbell',
+    'Cable',
+    'Machine',
+    'Bodyweight',
+    'Kettlebell',
+    'Cardio Equipment',
+  ];
+
+  // Visual Styling & Icon Maps for Muscles
+  const muscleVisuals: Record<
+    string,
+    { color: string; border: string; bg: string; icon: any; gradient: string }
+  > = {
+    Chest: {
+      color: 'text-rose-400',
+      border: 'border-rose-500/30',
+      bg: 'bg-rose-500/10',
+      icon: Target,
+      gradient: 'from-rose-950/40 via-[#10151C] to-[#10151C]',
+    },
+    Back: {
+      color: 'text-sky-400',
+      border: 'border-sky-500/30',
+      bg: 'bg-sky-500/10',
+      icon: Layers,
+      gradient: 'from-sky-950/40 via-[#10151C] to-[#10151C]',
+    },
+    Shoulders: {
+      color: 'text-amber-400',
+      border: 'border-amber-500/30',
+      bg: 'bg-amber-500/10',
+      icon: Zap,
+      gradient: 'from-amber-950/40 via-[#10151C] to-[#10151C]',
+    },
+    Legs: {
+      color: 'text-emerald-400',
+      border: 'border-emerald-500/30',
+      bg: 'bg-emerald-500/10',
+      icon: Dumbbell,
+      gradient: 'from-emerald-950/40 via-[#10151C] to-[#10151C]',
+    },
+    Glutes: {
+      color: 'text-purple-400',
+      border: 'border-purple-500/30',
+      bg: 'bg-purple-500/10',
+      icon: Activity,
+      gradient: 'from-purple-950/40 via-[#10151C] to-[#10151C]',
+    },
+    Biceps: {
+      color: 'text-lime-400',
+      border: 'border-lime-500/30',
+      bg: 'bg-lime-500/10',
+      icon: Flame,
+      gradient: 'from-lime-950/40 via-[#10151C] to-[#10151C]',
+    },
+    Triceps: {
+      color: 'text-teal-400',
+      border: 'border-teal-500/30',
+      bg: 'bg-teal-500/10',
+      icon: Dumbbell,
+      gradient: 'from-teal-950/40 via-[#10151C] to-[#10151C]',
+    },
+    Core: {
+      color: 'text-indigo-400',
+      border: 'border-indigo-500/30',
+      bg: 'bg-indigo-500/10',
+      icon: Target,
+      gradient: 'from-indigo-950/40 via-[#10151C] to-[#10151C]',
+    },
+    Cardio: {
+      color: 'text-orange-400',
+      border: 'border-orange-500/30',
+      bg: 'bg-orange-500/10',
+      icon: Activity,
+      gradient: 'from-orange-950/40 via-[#10151C] to-[#10151C]',
+    },
+  };
+
+  // Filtered exercises
+  const filteredExercises = exercises.filter((ex) => {
+    const matchesSearch =
+      ex.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ex.primaryMuscle.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesMuscle = selectedMuscle === 'All' || ex.primaryMuscle === selectedMuscle;
+    const matchesEquipment = selectedEquipment === 'All' || ex.equipment === selectedEquipment;
+    return matchesSearch && matchesMuscle && matchesEquipment;
+  });
+
+  const handleOpenNewProgram = () => {
+    setEditingProgram(null);
+    setProgramForm({
+      id: 'custom_' + Date.now(),
+      name: '',
+      description: '',
+      level: 'intermediate',
+      frequencyPerWeek: 4,
+      days: [
+        {
+          dayNumber: 1,
+          title: 'Day 1 - Focus',
+          exercises: [
+            { exerciseId: exercises[0]?.id || 'ex_barbell_bench_press', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 90 },
+          ],
+        },
+      ],
+    });
+    setIsProgramModalOpen(true);
+  };
+
+  const handleEditProgram = (prog: WorkoutProgram) => {
+    setEditingProgram(prog);
+    setProgramForm({
+      id: prog.id,
+      name: prog.name,
+      description: prog.description,
+      level: prog.level,
+      frequencyPerWeek: prog.frequencyPerWeek,
+      days: JSON.parse(JSON.stringify(prog.days)),
+    });
+    setIsProgramModalOpen(true);
+  };
+
+  const handleSaveProgramModal = () => {
+    if (!programForm.name.trim()) return;
+    const updated: WorkoutProgram = {
+      ...programForm,
+      isCustom: true,
+    };
+    onSaveProgram(updated);
+    setIsProgramModalOpen(false);
+  };
+
+  const handleAddDayToForm = () => {
+    setProgramForm((prev) => ({
+      ...prev,
+      days: [
+        ...prev.days,
+        {
+          dayNumber: prev.days.length + 1,
+          title: `Day ${prev.days.length + 1} - Session`,
+          exercises: [
+            { exerciseId: exercises[0]?.id || 'ex_barbell_back_squat', targetSets: 3, targetReps: '8-10', targetRpe: 8.0, restSeconds: 90 },
+          ],
+        },
+      ],
+    }));
+  };
+
+  const handleAddExerciseToDay = (dayIdx: number, exerciseId: string) => {
+    setProgramForm((prev) => {
+      const copy = { ...prev };
+      copy.days[dayIdx].exercises.push({
+        exerciseId,
+        targetSets: 3,
+        targetReps: '8-10',
+        targetRpe: 8.0,
+        restSeconds: 90,
+      });
+      return copy;
+    });
+  };
+
+  const handleRemoveExerciseFromDay = (dayIdx: number, exIdx: number) => {
+    setProgramForm((prev) => {
+      const copy = { ...prev };
+      copy.days[dayIdx].exercises.splice(exIdx, 1);
+      return copy;
+    });
+  };
+
+  return (
+    <div className="space-y-6 pb-20">
+      {/* Top Header & Fast Start */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18212C] pb-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Workout Management
+          </h1>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Structured periodization, 40+ exercise library & autoregulated logging
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onStartEmptyWorkout}
+            className="flex items-center gap-2 px-4 py-2.5 bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-lime-500/20 transition-colors"
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            Quick Workout
+          </button>
+        </div>
+      </div>
+
+      {/* Segmented Sub-Navigation */}
+      <div className="flex items-center gap-1 p-1 bg-[#10151C] border border-[#1E2734] rounded-xl max-w-xl w-full overflow-x-auto scrollbar-none">
+        <button
+          onClick={() => setActiveTab('programs')}
+          className={`flex-1 min-w-[70px] py-2 text-xs font-bold rounded-lg transition-colors text-center ${
+            activeTab === 'programs'
+              ? 'bg-[#1C2633] text-lime-400 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          {isMobileMode ? 'Splits' : 'Splits & Programs'}
+        </button>
+        <button
+          onClick={() => setActiveTab('library')}
+          className={`flex-1 min-w-[70px] py-2 text-xs font-bold rounded-lg transition-colors text-center ${
+            activeTab === 'library'
+              ? 'bg-[#1C2633] text-lime-400 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          {isMobileMode ? 'Library' : 'Exercise Library'}
+        </button>
+        <button
+          onClick={() => setActiveTab('anatomy')}
+          className={`flex-1 min-w-[95px] py-2 text-xs font-bold rounded-lg transition-colors text-center flex items-center justify-center gap-1.5 ${
+            activeTab === 'anatomy'
+              ? 'bg-lime-400 text-slate-950 font-black shadow-md shadow-lime-500/20'
+              : 'text-lime-400 hover:text-lime-300'
+          }`}
+        >
+          <Target className="w-3.5 h-3.5" />
+          <span>Muscle Map</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`flex-1 min-w-[65px] py-2 text-xs font-bold rounded-lg transition-colors text-center ${
+            activeTab === 'history'
+              ? 'bg-[#1C2633] text-lime-400 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          History
+        </button>
+      </div>
+
+      {/* TAB 1: PROGRAMMES */}
+      {activeTab === 'programs' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                Training Programmes
+              </h2>
+              <p className="text-xs text-slate-400">
+                Scientifically calibrated splits with progressive overload
+              </p>
+            </div>
+            <button
+              onClick={handleOpenNewProgram}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#141C25] hover:bg-[#1A2533] border border-[#233142] text-xs font-semibold text-lime-400 rounded-lg transition-colors shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Create</span>
+            </button>
+          </div>
+
+          <div className={`grid gap-4 ${isMobileMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+            {programs.map((program) => {
+              // Derive color theme
+              const isPpl = program.id.includes('ppl');
+              const isUpper = program.id.includes('upper');
+              const isFull = program.id.includes('full');
+
+              return (
+                <div
+                  key={program.id}
+                  className="bg-[#10151C] border border-[#1E2734] hover:border-[#2B384B] rounded-2xl overflow-hidden shadow-sm transition-all flex flex-col justify-between group"
+                >
+                  {/* Visual Top Banner for Programme */}
+                  <div
+                    className={`h-24 p-4 flex items-end justify-between bg-gradient-to-r ${
+                      isPpl
+                        ? 'from-emerald-950 via-slate-900 to-black'
+                        : isUpper
+                        ? 'from-sky-950 via-slate-900 to-black'
+                        : isFull
+                        ? 'from-amber-950 via-slate-900 to-black'
+                        : 'from-purple-950 via-slate-900 to-black'
+                    } relative`}
+                  >
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-lime-400 font-bold border border-lime-500/20">
+                        {program.frequencyPerWeek} Days/Wk
+                      </span>
+                      {program.isCustom && (
+                        <span className="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">
+                          Custom
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-lime-400">
+                        {program.level} Split
+                      </span>
+                      <h3 className="text-base font-extrabold text-white mt-0.5">{program.name}</h3>
+                    </div>
+                  </div>
+
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <p className="text-xs text-slate-400 leading-relaxed mb-4">{program.description}</p>
+
+                      {/* Program Days List */}
+                      <div className="space-y-2 mb-4">
+                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                          Workouts in this Split:
+                        </span>
+                        {program.days.map((day, dIdx) => (
+                          <div
+                            key={dIdx}
+                            className="p-3 rounded-xl bg-[#141B24] border border-[#202B3A] space-y-2.5"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs font-bold text-slate-200">{day.title}</p>
+                                <p className="text-[11px] text-slate-400">
+                                  {day.exercises.length} Movements · ~
+                                  {day.exercises.reduce((s, e) => s + e.targetSets, 0)} Total Sets
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => onStartProgramDay(program, dIdx)}
+                                className="flex items-center gap-1 px-3 py-1 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold rounded-lg transition-colors"
+                              >
+                                <Play className="w-3 h-3 fill-current" />
+                                Start
+                              </button>
+                            </div>
+
+                            {/* Animated Movements Preview Strip in Split */}
+                            <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
+                              {day.exercises.map((pEx, pIdx) => {
+                                const exData = exercises.find((e) => e.id === pEx.exerciseId);
+                                if (!exData) return null;
+                                return (
+                                  <div
+                                    key={pIdx}
+                                    onClick={() => setSelectedExerciseModal(exData)}
+                                    className="w-20 shrink-0 bg-[#0F151D] hover:bg-[#16202B] rounded-xl p-1.5 border border-[#212E3D] hover:border-lime-500/50 cursor-pointer group transition-all"
+                                    title={`Click to view ${exData.name} form animation`}
+                                  >
+                                    <div className="w-full h-12 rounded-lg bg-black/60 overflow-hidden mb-1 flex items-center justify-center">
+                                      <ExerciseAnimation exercise={exData} isThumbnail={true} className="w-full h-full" />
+                                    </div>
+                                    <p className="text-[10px] font-bold text-slate-300 group-hover:text-lime-400 truncate">
+                                      {exData.name}
+                                    </p>
+                                    <p className="text-[9px] text-slate-400 font-mono">
+                                      {pEx.targetSets} × {pEx.targetReps}
+                                    </p>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-[#1A232E] flex items-center justify-between text-[11px] text-slate-400">
+                      <span>Autoregulation: Active</span>
+                      {program.isCustom ? (
+                        <button
+                          onClick={() => handleEditProgram(program)}
+                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-white"
+                        >
+                          <Edit2 className="w-3 h-3" /> Edit
+                        </button>
+                      ) : (
+                        <span className="text-slate-300">Periodized 4-Wk Wave</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: EXERCISE LIBRARY */}
+      {activeTab === 'library' && (
+        <div className="space-y-5">
+          {/* Search & Filter Bar */}
+          <div className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-4 space-y-3">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search exercise by name or primary muscle (e.g. Bench, Squat, Delts)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#151D27] border border-[#243142] rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-lime-400"
+              />
+            </div>
+
+            {/* Muscle Group Filter Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              <button
+                onClick={() => setSelectedMuscle('All')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                  selectedMuscle === 'All'
+                    ? 'bg-lime-400 text-slate-950'
+                    : 'bg-[#151D27] text-slate-400 hover:text-white border border-[#222E3D]'
+                }`}
+              >
+                All Muscles
+              </button>
+              {muscleGroups.map((muscle) => (
+                <button
+                  key={muscle}
+                  onClick={() => setSelectedMuscle(muscle)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    selectedMuscle === muscle
+                      ? 'bg-lime-400 text-slate-950'
+                      : 'bg-[#151D27] text-slate-400 hover:text-white border border-[#222E3D]'
+                  }`}
+                >
+                  {muscle}
+                </button>
+              ))}
+            </div>
+
+            {/* Equipment Filter */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              <button
+                onClick={() => setSelectedEquipment('All')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors ${
+                  selectedEquipment === 'All'
+                    ? 'bg-slate-700 text-white'
+                    : 'bg-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                All Equipment
+              </button>
+              {equipmentTypes.map((eq) => (
+                <button
+                  key={eq}
+                  onClick={() => setSelectedEquipment(eq)}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors ${
+                    selectedEquipment === eq
+                      ? 'bg-slate-700 text-white'
+                      : 'bg-transparent text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {eq}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Exercise Grid with Visual Cards & Icons */}
+          <div className={`grid gap-3.5 ${isMobileMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+            {filteredExercises.map((exercise) => {
+              const visual = muscleVisuals[exercise.primaryMuscle] || muscleVisuals.Chest;
+              const IconComponent = visual.icon;
+
+              return (
+                <div
+                  key={exercise.id}
+                  onClick={() => setSelectedExerciseModal(exercise)}
+                  className={`bg-gradient-to-b ${visual.gradient} border border-[#1E2734] hover:border-[#2D3C4E] rounded-xl p-4 shadow-sm cursor-pointer transition-all hover:translate-y-[-1px] flex flex-col justify-between group`}
+                >
+                  <div>
+                    {/* Visual Icon & Muscle Tag */}
+                    <div className="flex items-center justify-between text-[11px] mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <div
+                          className={`w-6 h-6 rounded-lg ${visual.bg} ${visual.border} border flex items-center justify-center ${visual.color}`}
+                        >
+                          <IconComponent className="w-3.5 h-3.5" />
+                        </div>
+                        <span className={`font-bold ${visual.color}`}>{exercise.primaryMuscle}</span>
+                      </div>
+                      <span className="text-slate-400 font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#131B24] border border-[#212E3D]">
+                        {exercise.equipment}
+                      </span>
+                    </div>
+
+                    <h3 className="text-sm font-bold text-white tracking-tight group-hover:text-lime-400 transition-colors">
+                      {exercise.name}
+                    </h3>
+
+                    {/* Live Kinematic Animation Preview */}
+                    <div className="w-full h-24 rounded-xl bg-black/60 border border-[#202C3B] overflow-hidden my-2.5 flex items-center justify-center">
+                      <ExerciseAnimation exercise={exercise} isThumbnail={true} className="w-full h-full" />
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mt-2 text-[11px] text-slate-400">
+                      <span className="px-1.5 py-0.5 rounded bg-[#16202A] border border-[#232F3D]">
+                        {exercise.category}
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded bg-[#16202A] border border-[#232F3D]">
+                        {exercise.difficulty}
+                      </span>
+                      <span className="font-mono text-lime-400 font-semibold">
+                        RPE {exercise.targetRpeDefault}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-3.5 pt-2.5 border-t border-[#17202B] flex items-center justify-between text-[11px] text-slate-400">
+                    <span className="truncate max-w-[180px]">
+                      {exercise.secondaryMuscles.length > 0
+                        ? `+ ${exercise.secondaryMuscles.join(', ')}`
+                        : 'Isolation Focus'}
+                    </span>
+                    <span className="text-[10px] text-lime-400 font-semibold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                      Animation <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* TAB: INTERACTIVE MUSCLE MAP (MUSCLEWIKI) */}
+      {activeTab === 'anatomy' && (
+        <InteractiveMuscleMap
+          exercises={exercises}
+          isMobileMode={isMobileMode}
+          onSelectExercise={(ex) => setSelectedExerciseModal(ex)}
+          onStartSingleExercise={(ex) => setSelectedExerciseModal(ex)}
+        />
+      )}
+
+      {/* TAB 3: WORKOUT HISTORY WITH VISUAL CARDS */}
+      {activeTab === 'history' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+              Recorded Workout History
+            </h2>
+            <span className="text-xs text-slate-400 font-mono">Total Logged: {history.length}</span>
+          </div>
+
+          {history.length === 0 ? (
+            <div className="text-center py-12 bg-[#10151C] border border-[#1E2734] rounded-2xl">
+              <Dumbbell className="w-10 h-10 mx-auto text-slate-600 mb-2" />
+              <p className="text-sm font-bold text-slate-300">No recorded workouts yet</p>
+              <p className="text-xs text-slate-500 mt-1">Start a workout above to record your sets and PRs.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {history.map((session) => {
+                const dateObj = new Date(session.startedAt);
+                const dayMonth = dateObj.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                });
+                const durationMinutes = Math.round(session.durationSeconds / 60);
+
+                return (
+                  <div
+                    key={session.id}
+                    className="bg-[#10151C] border border-[#1E2734] hover:border-[#283648] rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* Calendar Badge */}
+                      <div className="w-12 h-12 rounded-xl bg-[#141C25] border border-[#212E3E] flex flex-col items-center justify-center shrink-0">
+                        <span className="text-[10px] text-lime-400 font-bold uppercase">
+                          {dateObj.toLocaleDateString('en-US', { weekday: 'short' })}
+                        </span>
+                        <span className="text-sm font-black text-white font-mono">
+                          {dateObj.getDate()}
+                        </span>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-mono text-slate-400">{dayMonth}</span>
+                          {session.prCount > 0 && (
+                            <span className="text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded flex items-center gap-1">
+                              <Trophy className="w-3 h-3" />
+                              {session.prCount} PR Set
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-base font-bold text-white mt-0.5">{session.dayTitle}</h3>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {session.exercises.length} Exercises · {session.exercises.map((e) => e.exerciseName).join(', ')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between md:justify-end gap-5 border-t md:border-t-0 pt-3 md:pt-0 border-[#1B2531]">
+                      <div className="text-right">
+                        <p className="text-[10px] text-slate-400 uppercase font-semibold">Duration</p>
+                        <p className="text-sm font-bold text-white font-mono">{durationMinutes} min</p>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-[10px] text-slate-400 uppercase font-semibold">Total Volume</p>
+                        <p className="text-sm font-black text-lime-400 font-mono">{session.totalVolumeKg.toLocaleString()} kg</p>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-[10px] text-slate-400 uppercase font-semibold">Sets</p>
+                        <p className="text-sm font-bold text-slate-200 font-mono">{session.totalSets} sets</p>
+                      </div>
+
+                      <button
+                        onClick={() => onDeleteSession(session.id)}
+                        className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg transition-colors ml-2"
+                        title="Delete record"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* EXERCISE DETAIL MODAL WITH FULL ANIMATION SUITE */}
+      {selectedExerciseModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md overflow-hidden">
+          <div className="bg-[#10161D] border border-[#212C3B] rounded-2xl w-full max-w-[365px] sm:max-w-xl max-h-[88vh] flex flex-col p-4 sm:p-5 text-slate-100 shadow-2xl relative overflow-hidden">
+            <button
+              onClick={() => setSelectedExerciseModal(null)}
+              className="absolute top-3.5 right-3.5 p-1.5 text-slate-400 hover:text-white rounded-lg bg-[#16202B] z-10"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex-1 overflow-y-auto pr-1 space-y-3.5">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[10px] font-bold text-lime-400 uppercase tracking-wider">
+                    {selectedExerciseModal.primaryMuscle} · {selectedExerciseModal.category}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {selectedExerciseModal.difficulty}
+                  </span>
+                </div>
+                <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                  {selectedExerciseModal.name}
+                </h2>
+              </div>
+
+              {/* Full Interactive Biomechanical Exercise Animation */}
+              <ExerciseAnimation exercise={selectedExerciseModal} isThumbnail={false} />
+
+              {/* Metrics Chips */}
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-[#141C25] p-2 rounded-xl border border-[#202C3B]">
+                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Equipment</p>
+                  <p className="text-xs font-bold text-slate-200 mt-0.5 truncate">{selectedExerciseModal.equipment}</p>
+                </div>
+                <div className="bg-[#141C25] p-2 rounded-xl border border-[#202C3B]">
+                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Target RPE</p>
+                  <p className="text-xs font-bold text-lime-400 font-mono mt-0.5">RPE {selectedExerciseModal.targetRpeDefault}</p>
+                </div>
+                <div className="bg-[#141C25] p-2 rounded-xl border border-[#202C3B]">
+                  <p className="text-[10px] text-slate-400 uppercase font-semibold">Rest Period</p>
+                  <p className="text-xs font-bold text-sky-400 font-mono mt-0.5">{selectedExerciseModal.defaultRestSeconds}s</p>
+                </div>
+              </div>
+
+              {/* Secondary Muscles */}
+              {selectedExerciseModal.secondaryMuscles.length > 0 && (
+                <div className="text-xs text-slate-400">
+                  <span className="text-slate-300 font-semibold">Secondary Target Groups: </span>
+                  {selectedExerciseModal.secondaryMuscles.join(', ')}
+                </div>
+              )}
+
+              {/* Biomechanical Execution Instructions */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Execution Guidelines:</h4>
+                <ol className="space-y-1.5 text-xs text-slate-300 list-decimal list-inside leading-relaxed bg-[#141C25] p-3 rounded-xl border border-[#202C3B]">
+                  {selectedExerciseModal.instructions.map((step, idx) => (
+                    <li key={idx} className="pl-1">
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <button
+                onClick={() => setSelectedExerciseModal(null)}
+                className="w-full py-2.5 bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-lime-500/20 transition-colors"
+              >
+                Close Movement Analysis
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE / EDIT PROGRAMME MODAL */}
+      {isProgramModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+          <div className="bg-[#10161D] border border-[#212C3B] rounded-2xl max-w-2xl w-full p-6 text-slate-100 shadow-2xl relative my-8">
+            <button
+              onClick={() => setIsProgramModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-white rounded-lg bg-[#16202B]"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <h2 className="text-lg font-bold text-white mb-4">
+              {editingProgram ? 'Edit Custom Programme' : 'Build Custom Training Programme'}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Programme Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Upper / Lower Hypertrophy Focus"
+                  value={programForm.name}
+                  onChange={(e) => setProgramForm({ ...programForm, name: e.target.value })}
+                  className="w-full bg-[#161F2A] border border-[#273547] rounded-lg px-3.5 py-2 text-sm text-white focus:outline-none focus:border-lime-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Description & Objective</label>
+                <textarea
+                  rows={2}
+                  placeholder="Target goals, volume distribution, rest protocols..."
+                  value={programForm.description}
+                  onChange={(e) => setProgramForm({ ...programForm, description: e.target.value })}
+                  className="w-full bg-[#161F2A] border border-[#273547] rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none focus:border-lime-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Experience Level</label>
+                  <select
+                    value={programForm.level}
+                    onChange={(e) => setProgramForm({ ...programForm, level: e.target.value as any })}
+                    className="w-full bg-[#161F2A] border border-[#273547] rounded-lg px-3 py-2 text-xs text-white"
+                  >
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Days / Week</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={7}
+                    value={programForm.frequencyPerWeek}
+                    onChange={(e) => setProgramForm({ ...programForm, frequencyPerWeek: Number(e.target.value) })}
+                    className="w-full bg-[#161F2A] border border-[#273547] rounded-lg px-3 py-2 text-xs text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Workout Days in Programme */}
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider">Programme Days</h4>
+                  <button
+                    onClick={handleAddDayToForm}
+                    className="flex items-center gap-1 text-xs text-lime-400 hover:text-lime-300 font-semibold"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Day
+                  </button>
+                </div>
+
+                {programForm.days.map((day, dIdx) => (
+                  <div key={dIdx} className="bg-[#141C25] border border-[#212C3A] rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <input
+                        type="text"
+                        value={day.title}
+                        onChange={(e) => {
+                          const copy = { ...programForm };
+                          copy.days[dIdx].title = e.target.value;
+                          setProgramForm(copy);
+                        }}
+                        className="bg-transparent border-b border-[#2C3B4E] pb-1 text-sm font-bold text-white focus:outline-none focus:border-lime-400"
+                      />
+                      <span className="text-xs text-slate-400">Day {day.dayNumber}</span>
+                    </div>
+
+                    {/* Exercises in Day */}
+                    <div className="space-y-2">
+                      {day.exercises.map((pEx, exIdx) => {
+                        const exData = exercises.find((e) => e.id === pEx.exerciseId);
+                        return (
+                          <div
+                            key={exIdx}
+                            className="flex items-center justify-between gap-2 p-2 bg-[#10151C] rounded-lg text-xs"
+                          >
+                            <span className="font-semibold text-slate-200 truncate max-w-[200px]">
+                              {exData?.name || pEx.exerciseId}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-slate-400 font-mono">{pEx.targetSets} sets × {pEx.targetReps}</span>
+                              <button
+                                onClick={() => handleRemoveExerciseFromDay(dIdx, exIdx)}
+                                className="text-slate-500 hover:text-red-400 p-1"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Quick Add Exercise Dropdown */}
+                    <div className="pt-2">
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            handleAddExerciseToDay(dIdx, e.target.value);
+                            e.target.value = '';
+                          }
+                        }}
+                        className="w-full bg-[#10151C] border border-[#232F3E] rounded-lg px-2.5 py-1.5 text-xs text-slate-300"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          + Add Exercise to {day.title}...
+                        </option>
+                        {exercises.map((ex) => (
+                          <option key={ex.id} value={ex.id}>
+                            {ex.name} ({ex.primaryMuscle})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#1F2A38] mt-6">
+              <button
+                onClick={() => setIsProgramModalOpen(false)}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveProgramModal}
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-lime-500/20"
+              >
+                <Check className="w-4 h-4" />
+                Save Programme
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
