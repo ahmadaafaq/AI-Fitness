@@ -1,5 +1,6 @@
 import React from 'react';
 import { Dumbbell, Home, Utensils, TrendingUp, Video, Play } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface NavigationProps {
   currentTab: string;
@@ -16,13 +17,15 @@ export const Navigation: React.FC<NavigationProps> = ({
   onResumeWorkout,
   isInsidePhoneFrame = false,
 }) => {
+  const { t } = useLanguage();
+
   // Navigation tabs: Home, Workout, Nutrition, Progress, Classes (Masterclasses)
   const tabs = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'workout', label: 'Workout', icon: Dumbbell },
-    { id: 'nutrition', label: 'Nutrition', icon: Utensils },
-    { id: 'progress', label: 'Progress', icon: TrendingUp },
-    { id: 'classes', label: 'Classes', icon: Video },
+    { id: 'home', label: t('nav.home', 'Home'), icon: Home },
+    { id: 'workout', label: t('nav.workout', 'Workout'), icon: Dumbbell },
+    { id: 'nutrition', label: t('nav.nutrition', 'Nutrition'), icon: Utensils },
+    { id: 'progress', label: t('nav.progress', 'Progress'), icon: TrendingUp },
+    { id: 'classes', label: t('nav.classes', 'Classes'), icon: Video },
   ];
 
   const positionClass = isInsidePhoneFrame ? 'absolute' : 'fixed';

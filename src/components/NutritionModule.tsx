@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface NutritionModuleProps {
   userProfile: UserProfile;
@@ -36,6 +37,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
   onDeleteMealEntry,
   onSaveCustomFood,
 }) => {
+  const { t, language } = useLanguage();
   const [selectedDate, setSelectedDate] = useState<string>('2026-10-30');
   const [activeMealType, setActiveMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('breakfast');
 
@@ -383,6 +385,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
           targetCalories,
           proteinTarget,
           cuisine: 'Uzbekistan',
+          language,
           userContext: {
             name: userProfile?.name || 'Athlete',
             goal: userProfile?.objective || 'Muscle Gain',
@@ -612,10 +615,10 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
   };
 
   const mealsList: Array<{ id: 'breakfast' | 'lunch' | 'dinner' | 'snack'; title: string; icon: string; subtitle: string }> = [
-    { id: 'breakfast', title: 'Breakfast', icon: '🌅', subtitle: 'Morning metabolic activation' },
-    { id: 'lunch', title: 'Lunch', icon: '☀️', subtitle: 'Peak midday fuel & glycogen' },
-    { id: 'dinner', title: 'Dinner', icon: '🌙', subtitle: 'Overnight recovery & MPS' },
-    { id: 'snack', title: 'Snacks & Supplements', icon: '⚡', subtitle: 'Intra-day amino spikes' },
+    { id: 'breakfast', title: t('nutrition.breakfast', 'Breakfast'), icon: '🌅', subtitle: 'Morning metabolic activation' },
+    { id: 'lunch', title: t('nutrition.lunch', 'Lunch'), icon: '☀️', subtitle: 'Peak midday fuel & glycogen' },
+    { id: 'dinner', title: t('nutrition.dinner', 'Dinner'), icon: '🌙', subtitle: 'Overnight recovery & MPS' },
+    { id: 'snack', title: t('nutrition.snacks', 'Snacks & Supplements'), icon: '⚡', subtitle: 'Intra-day amino spikes' },
   ];
 
   return (
@@ -642,10 +645,10 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18212C] pb-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Precision Nutrition
+            {t('nutrition.title', 'Precision Nutrition')}
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Targeted macronutrients, high-density fuel & Open Food Facts integration
+            {t('nutrition.subtitle', 'Targeted macronutrients, high-density fuel & Open Food Facts integration')}
           </p>
         </div>
 
@@ -668,7 +671,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-[11px] font-bold uppercase tracking-wider border border-emerald-500/30 whitespace-nowrap shadow-sm">
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>AI Diet Planner · Uzbekistan Cuisine</span>
+              <span>{t('nutrition.uzbekCardBadge', 'AI Diet Planner · Uzbekistan Cuisine')}</span>
             </div>
 
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-400/10 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-400/20 whitespace-nowrap">
@@ -680,17 +683,17 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
           {/* Title & Description */}
           <div className="space-y-1.5">
             <h2 className="text-base sm:text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
-              <span>AI Uzbek Athlete Diet Planner</span>
+              <span>{t('nutrition.uzbekCardTitle', 'AI Uzbek Athlete Diet Planner')}</span>
               <span className="text-base">🇺🇿</span>
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
-              Authentic high-protein Central Asian dishes calibrated in real time to your daily goal of{' '}
+              {t('nutrition.uzbekCardSubtitle', 'Authentic high-protein Central Asian dishes calibrated in real time to your daily goal of')}{' '}
               <span className="inline-block px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
                 {targetCalories} kcal
               </span>{' '}
               and{' '}
               <span className="inline-block px-1.5 py-0.5 rounded bg-lime-500/20 text-lime-300 font-mono font-bold border border-lime-500/30">
-                {proteinTarget}g protein
+                {proteinTarget}g {t('nutrition.protein', 'protein')}
               </span>
               .
             </p>
@@ -720,7 +723,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
           <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-[#182330]">
             <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
-              <span>Devzira glycogen & restorative bone collagen for peak recovery</span>
+              <span>{t('nutrition.uzbekFooter', 'Devzira glycogen & restorative bone collagen for peak recovery')}</span>
             </p>
             <button
               id="open-uzbek-diet-planner-btn"
@@ -731,7 +734,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
               className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-lime-400 hover:from-emerald-300 hover:to-lime-300 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98] whitespace-nowrap cursor-pointer"
             >
               <ChefHat className="w-4 h-4" />
-              <span>Open AI Diet Planner</span>
+              <span>{t('nutrition.openDietPlanner', 'Open AI Diet Planner')}</span>
             </button>
           </div>
         </div>
@@ -744,37 +747,37 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
             <div className="p-1.5 rounded-lg bg-lime-500/10 text-lime-400">
               <Flame className="w-4 h-4" />
             </div>
-            <h2 className="text-sm font-bold text-white">Daily Calorie & Macro Budget</h2>
+            <h2 className="text-sm font-bold text-white">{t('nutrition.budgetTitle', 'Daily Calorie & Macro Budget')}</h2>
           </div>
           <span className="text-xs text-lime-400 font-mono font-bold">
-            {remainingCalories.toLocaleString()} kcal left
+            {remainingCalories.toLocaleString()} kcal {t('nutrition.caloriesLeft', 'left')}
           </span>
         </div>
 
         {/* Big Numbers */}
         <div className={`grid gap-2.5 py-3 border-y border-[#1A232E] my-3 ${isMobileMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'}`}>
           <div>
-            <p className="text-[11px] text-slate-400 uppercase">Consumed</p>
+            <p className="text-[11px] text-slate-400 uppercase">{t('nutrition.consumed', 'Consumed')}</p>
             <p className="text-xl sm:text-2xl font-black text-white font-mono tabular-nums mt-0.5">
               {totalCalories}{' '}
               <span className="text-xs font-sans font-normal text-slate-400">kcal</span>
             </p>
           </div>
           <div>
-            <p className="text-[11px] text-slate-400 uppercase">Target</p>
+            <p className="text-[11px] text-slate-400 uppercase">{t('nutrition.target', 'Target')}</p>
             <p className="text-xl sm:text-2xl font-black text-slate-300 font-mono tabular-nums mt-0.5">
               {targetCalories}{' '}
               <span className="text-xs font-sans font-normal text-slate-400">kcal</span>
             </p>
           </div>
           <div>
-            <p className="text-[11px] text-slate-400 uppercase">Water Intake</p>
+            <p className="text-[11px] text-slate-400 uppercase">{t('nutrition.waterIntake', 'Water Intake')}</p>
             <p className="text-xl sm:text-2xl font-black text-sky-400 font-mono tabular-nums mt-0.5">
               2.8 <span className="text-xs font-sans font-normal text-slate-400">L</span>
             </p>
           </div>
           <div>
-            <p className="text-[11px] text-slate-400 uppercase">Burned (Active)</p>
+            <p className="text-[11px] text-slate-400 uppercase">{t('nutrition.burnedActive', 'Burned (Active)')}</p>
             <p className="text-xl sm:text-2xl font-black text-orange-400 font-mono tabular-nums mt-0.5">
               520 <span className="text-xs font-sans font-normal text-slate-400">kcal</span>
             </p>
@@ -786,7 +789,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
           {/* Protein */}
           <div className="bg-[#141B24] p-3 rounded-xl border border-[#202C3B]">
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-slate-300 font-semibold">Protein</span>
+              <span className="text-slate-300 font-semibold">{t('nutrition.protein', 'Protein')}</span>
               <span className="font-mono text-emerald-400 font-bold">
                 {totalProtein} / {proteinTarget}g
               </span>
@@ -798,14 +801,14 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
               />
             </div>
             <p className="text-[10px] text-slate-400 mt-1">
-              {Math.max(0, Math.round(proteinTarget - totalProtein))}g needed
+              {Math.max(0, Math.round(proteinTarget - totalProtein))}g {t('nutrition.needed', 'needed')}
             </p>
           </div>
 
           {/* Carbs */}
           <div className="bg-[#141B24] p-3 rounded-xl border border-[#202C3B]">
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-slate-300 font-semibold">Carbohydrates</span>
+              <span className="text-slate-300 font-semibold">{t('nutrition.carbs', 'Carbohydrates')}</span>
               <span className="font-mono text-sky-400 font-bold">
                 {totalCarbs} / {carbsTarget}g
               </span>
@@ -817,14 +820,14 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
               />
             </div>
             <p className="text-[10px] text-slate-400 mt-1">
-              {Math.max(0, Math.round(carbsTarget - totalCarbs))}g needed
+              {Math.max(0, Math.round(carbsTarget - totalCarbs))}g {t('nutrition.needed', 'needed')}
             </p>
           </div>
 
           {/* Fat */}
           <div className="bg-[#141B24] p-3 rounded-xl border border-[#202C3B]">
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-slate-300 font-semibold">Fats</span>
+              <span className="text-slate-300 font-semibold">{t('nutrition.fats', 'Fats')}</span>
               <span className="font-mono text-amber-400 font-bold">
                 {totalFat} / {fatTarget}g
               </span>
@@ -1203,7 +1206,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
                   <Sparkles className="w-3 h-3 text-emerald-300" />
                   <span>AI Diet System</span>
                 </div>
-                <h2 className="text-base sm:text-lg font-extrabold text-white">Uzbek Athlete Diet Planner</h2>
+                <h2 className="text-base sm:text-lg font-extrabold text-white">{t('uzbekModal.title', 'Uzbek Athlete Diet Planner')}</h2>
                 <p className="text-xs text-slate-400">
                   Target: <span className="text-emerald-400 font-mono font-bold">{targetCalories} kcal</span> · <span className="text-lime-400 font-mono font-bold">{proteinTarget}g Protein</span>
                 </p>
@@ -1221,8 +1224,8 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
               {/* Generator Trigger Card */}
               <div className="flex items-center justify-between gap-2 p-3.5 rounded-xl bg-[#141E2A] border border-[#213042]">
                 <div className="text-xs">
-                  <p className="font-bold text-white">Generate Full Day Plan</p>
-                  <p className="text-[11px] text-slate-400">Calibrates 4 meals of authentic Uzbek cuisine to your exact macros</p>
+                  <p className="font-bold text-white">{t('uzbekModal.generateCardTitle', 'Generate Full Day Plan')}</p>
+                  <p className="text-[11px] text-slate-400">{t('uzbekModal.generateCardDesc', 'Calibrates 4 meals of authentic Uzbek cuisine to your exact macros')}</p>
                 </div>
                 <button
                   id="generate-uzbek-plan-btn"
@@ -1233,12 +1236,12 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
                   {isGeneratingUzbek ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Calibrating...</span>
+                      <span>{t('uzbekModal.calibrating', 'Calibrating...')}</span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-3.5 h-3.5" />
-                      <span>Generate</span>
+                      <span>{t('uzbekModal.generateBtn', 'Generate')}</span>
                     </>
                   )}
                 </button>
@@ -1308,7 +1311,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
                     className="w-full py-2.5 bg-gradient-to-r from-emerald-400 to-lime-400 hover:from-emerald-300 hover:to-lime-300 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 mt-2 active:scale-[0.98] cursor-pointer"
                   >
                     <Check className="w-4 h-4" />
-                    <span>Log All 4 Meals to Selected Date ({selectedDate})</span>
+                    <span>{t('uzbekModal.logAllBtn', 'Log All 4 Meals to Selected Date')} ({selectedDate})</span>
                   </button>
                 </div>
               )}
@@ -1316,7 +1319,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
               {/* Uzbek Dishes Library */}
               <div className="pt-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                  Individual Uzbek Athlete Dishes (1-Click Log)
+                  {t('uzbekModal.dishesLibrary', 'Individual Uzbek Athlete Dishes (1-Click Log)')}
                 </h3>
                 <div className="space-y-2">
                   {uzbekDishesList.map((dish) => {
@@ -1349,7 +1352,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
                               : 'bg-[#17222F] hover:bg-emerald-400 hover:text-slate-950 text-emerald-400 font-bold'
                           } text-[11px] rounded-lg border border-[#233346] transition-colors whitespace-nowrap active:scale-[0.98] cursor-pointer shrink-0`}
                         >
-                          {loggedDishId === dish.id ? '✓ Logged' : '+ Log'}
+                          {loggedDishId === dish.id ? t('uzbekModal.loggedBtn', '✓ Logged') : t('uzbekModal.logBtn', '+ Log')}
                         </button>
                       </div>
                     );

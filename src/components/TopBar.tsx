@@ -1,5 +1,7 @@
 import React from 'react';
 import { User, Smartphone, Monitor } from 'lucide-react';
+import { LanguageSelector } from './LanguageSelector';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface TopBarProps {
   onOpenProfile: () => void;
@@ -16,6 +18,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   userName = 'Alex',
   isRealMobile = false,
 }) => {
+  const { t } = useLanguage();
   const initial = userName.charAt(0).toUpperCase();
 
   return (
@@ -31,8 +34,10 @@ export const TopBar: React.FC<TopBarProps> = ({
           </span>
         </div>
 
-        {/* Right Zone: Profile Avatar and optional desktop-only mobile frame preview */}
+        {/* Right Zone: Language Switcher, Profile Avatar and optional desktop-only mobile frame preview */}
         <div className="flex items-center gap-2 shrink-0">
+          <LanguageSelector />
+
           {!isRealMobile && !isMobileViewMode && (
             <button
               onClick={onToggleMobileView}
@@ -40,7 +45,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               title="Preview simulated 390px chassis on desktop"
             >
               <Smartphone className="w-3.5 h-3.5 text-lime-400" />
-              <span>Simulate Frame</span>
+              <span>{t('topbar.simulateFrame', 'Simulate Frame')}</span>
             </button>
           )}
 
@@ -54,7 +59,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               {initial}
             </div>
             <span className="font-semibold text-slate-300 group-hover:text-white hidden sm:inline">
-              Profile
+              {t('topbar.profile', 'Profile')}
             </span>
           </button>
         </div>

@@ -88,16 +88,21 @@ async function callGroq(
 
 // Server-side AI Coaching Chat Route (powered by Groq with Gemini/Simulated fallback)
 app.post('/api/gemini/chat', async (req: Request, res: Response) => {
-  const { messages, userContext } = req.body;
+  const { messages, userContext, language } = req.body;
 
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Messages array is required.' });
   }
 
+  const isUzbek = language === 'uz';
+
   const systemInstruction = `You are "YUKSAL AI", an elite sports scientist, strength coach, and precision sports nutritionist.
 You speak with professional clarity, evidence-based biomechanics, and actionable motivation.
 Tone: Concise, analytical, encouraging, and razor-sharp. Never prescribe medical treatments or make unsupported claims. Always prioritize joint integrity, progressive overload, and bio-individuality.
-
+${isUzbek ? `
+LANGUAGE INSTRUCTION (MANDATORY):
+The athlete is communicating in Uzbek (O'zbek tili, Latin script). You MUST write your ENTIRE reply in fluent, natural, grammatically correct Uzbek. Use accurate sports science, training, and nutrition terminology in Uzbek (e.g., "mashg'ulot", "oqsil", "uglevodlar", "yog'lar", "tiklanish", "takrorlashlar", "yondashuv", "gipertrofiya", "og'irlik"). Do not reply in Russian or English.
+` : ''}
 User Profile Context:
 - Name: ${userContext?.name || 'Athlete'}
 - Goal: ${userContext?.goal || 'Strength & Hypertrophy'}
@@ -140,7 +145,9 @@ Format recommendations with bullet points and clear tactical cues. Keep response
       );
 
       const response = await Promise.race([generatePromise, timeoutPromise]);
-      const replyText = response.text || 'I analyzed your parameters. Let us fine-tune your next session based on RPE and load autoregulation.';
+      const replyText = response.text || (isUzbek
+        ? "Parametrlaringizni tahlil qildim. Keling, RPE va yuklamani avtoregulyatsiya qilish orqali keyingi mashg'ulotni optimallashtiramiz."
+        : 'I analyzed your parameters. Let us fine-tune your next session based on RPE and load autoregulation.');
       return res.json({ reply: replyText, isLiveAI: true, provider: 'Gemini 3.8 Flash' });
     } catch (err: any) {
       console.warn('Gemini API call timed out or failed:', err?.message || err);
@@ -151,33 +158,61 @@ Format recommendations with bullet points and clear tactical cues. Keep response
   const query = latestMessage.toLowerCase();
   let fallbackReply = '';
 
-  if (query.includes('bench') || query.includes('stall') || query.includes('plateau')) {
-    fallbackReply = `### Breaking Your Bench Press Plateau:
+  if (query.includes('bench') || query.includes('stall') || query.includes('plateau') || query.includes("to'xtab")) {
+    fallbackReply = isUzbek
+      ? `### Bench Press Og'irligini Oshirish Bo'yicha Ko'rsatma:
+1. **Charchoq va RPE Nazorati**: Oxirgi 3 mashg'ulotni tahlil qiling. Agar ishchi to'plamlarda o'rtacha RPE 9.0 dan oshgan bo'lsa, markaziy asab tizimi charchagan.
+2. **Haftalik Chastota va Hajm**: Haftada 2-3 marta ko'krak mashg'ulotiga o'ting, ishchi og'irlikni 7.5% ga kamaytirib sifatli hajm to'plang (RPE 7-7.5 da 3 to'plam 5 takror).
+3. **Qiyin Nuqtalarni Bartaraf Qilish**:
+   - Ko'krakdan ko'tarishda: 2 soniyali pauzali bench press qo'shing.
+   - Yuqori qulflashda: Tor tutqichli press va tritseps mashqlarini bajaring.`
+      : `### Breaking Your Bench Press Plateau:
 1. **Accumulated Fatigue & RPE Check**: Review your last 3 sessions. If your average RPE exceeded 9.0 on working sets, accumulated central fatigue is depressing bar velocity.
 2. **Frequency & Volume Shift**: Increase pressing frequency to 2-3x per week while dropping working weight by 7.5% to accumulate clean volume (3 sets of 5 at RPE 7-7.5).
 3. **Address Sticking Points**:
    - Off the chest: Add 2-second pause bench presses.
    - Mid-range/lockout: Incorporate heavy close-grip presses and triceps skull crushers.
 4. **Current Nutrition Anchor**: Ensure you are in a slight caloric surplus (+150-250 kcal) with at least 2.0g protein/kg body weight.`;
-  } else if (query.includes('protein') || query.includes('nutrition') || query.includes('eat') || query.includes('calorie')) {
-    fallbackReply = `### Nutrition & Protein Optimization:
+  } else if (query.includes('protein') || query.includes('nutrition') || query.includes('eat') || query.includes('calorie') || query.includes('oqsil')) {
+    fallbackReply = isUzbek
+      ? `### Oziqlanish va Oqsilni Optimallashtirish:
+- **Maqsadli Oqsil**: Maqsadli vazningizga (${userContext?.targetWeight || '75'}kg) qarab, kuniga 1.8g - 2.2g/kg (taxminan 165g - 175g toza oqsil) oling.
+- **Leytsin Bo'sag'asi**: Mushak oqsili sintezini maksimal darajada ushlab turish uchun oqsilni har 3.5 - 4.5 soatda 35-45g dan 4 ta taomga taqsimlang.
+- **Mashg'ulotdan Keyingi Tiklanish**: Mashg'ulot tugagach 90 daqiqa ichida 30-40g oqsil va 40-60g oson hazm bo'ladigan uglevod iste'mol qiling.`
+      : `### Nutrition & Protein Optimization:
 - **Target Protein**: Based on your target weight (${userContext?.targetWeight || '75'}kg), aim for 1.8g - 2.2g per kg (approx. 165g - 175g daily).
 - **Leucine Threshold**: Distribute protein into 4 feedings of 35-45g each every 3.5 - 4.5 hours to maximize Muscle Protein Synthesis (MPS).
 - **Post-Workout Recovery**: Consume 30-40g protein paired with 40-60g easily digestible complex carbs within 90 minutes post-training.`;
-  } else if (query.includes('adjust') || query.includes('recovery') || query.includes('tired') || query.includes('sore')) {
-    fallbackReply = `### Autoregulation Protocol for High Fatigue:
+  } else if (query.includes('adjust') || query.includes('recovery') || query.includes('tired') || query.includes('sore') || query.includes('charchoq') || query.includes('moslashtir')) {
+    fallbackReply = isUzbek
+      ? `### Yuqori Charchoq Bo'yicha Avtoregulyatsiya Protokoli:
+- Tiklanish ko'rsatkichi asab tizimida yuqori yuklama borligini ko'rsatmoqda.
+- **To'plamlar**: Bugun har bir bazaviy mashqda 1 tadan kamroq to'plam bajaring.
+- **RIR Maqsadi**: Barcha ishchi to'plamlarni 2-3 RIR (RPE 7-8) darajasida to'xtating. Rad etishgacha (failure) bormang.
+- **Yengillashtirish**: Agar isinish og'irliklari sekin harakatlansa, mashg'ulotni dinamik tiklanish rejimiga o'tkazing (1RM ning 65% ida portlovchi 3 takror).`
+      : `### Autoregulation Protocol for High Fatigue:
 - Your Readiness score indicates elevated neuromuscular strain.
 - **Set Modification**: Drop back-off sets by 1 per compound movement today.
 - **RIR Target**: Cap all working sets at 2-3 RIR (RPE 7-8). Do not train to failure today.
 - **Deload Trigger**: If bar velocity remains sluggish on your warm-up sets today, convert the session into a dynamic recovery workout (65% 1RM for explosive triples).`;
-  } else if (query.includes('program') || query.includes('routine') || query.includes('split')) {
-    fallbackReply = `### Recommended Hypertrophy Split: Push / Pull / Legs (PPL)
+  } else if (query.includes('program') || query.includes('routine') || query.includes('split') || query.includes('dastur')) {
+    fallbackReply = isUzbek
+      ? `### Tavsiya etilgan Gipertrofiya Dasturi: Push / Pull / Legs (PPL)
+- **1-Kun (Push A)**: Nishab gantel pressi (3x8-10, RPE 8), Shtanga tikka press (3x6-8), Brusda tushish (3x10-12), Yonboshga gantel (4x15).
+- **2-Kun (Pull A)**: Shtanga tortish (3x6-8, RPE 8), Yuqori blok tortish (3x10-12), Face pull (3x15), Gantel bisepts (3x10-12).
+- **3-Kun (Legs A)**: Shtanga bilan o'tirib-turish (3x6-8, RPE 8), Rumin deadlift (3x8-10), Qadam tashlash (3x12), Boldir (4x15).
+- **4-Kun**: Faol tiklanish / Kardio.`
+      : `### Recommended Hypertrophy Split: Push / Pull / Legs (PPL)
 - **Day 1 (Push A)**: Incline Dumbbell Press (3x8-10, RPE 8), Barbell Overhead Press (3x6-8), Dips (3x10-12), Lateral Raises (4x15).
 - **Day 2 (Pull A)**: Barbell Bent-Over Row (3x6-8, RPE 8), Lat Pulldown (3x10-12), Face Pulls (3x15), Incline Dumbbell Curls (3x10-12).
 - **Day 3 (Legs A)**: Barbell Back Squat (3x6-8, RPE 8), Romanian Deadlift (3x8-10), Walking Lunges (3x12/leg), Standing Calf Raises (4x15).
 - **Day 4**: Active Recovery / Zone 2 Cardio.`;
   } else {
-    fallbackReply = `Based on your current telemetry and logged training metrics:
+    fallbackReply = isUzbek
+      ? `Sizning qayd etilgan mashg'ulot ko'rsatkichlaringiz asosida:
+- **Progressiv Yuklama**: Oxirgi 4 haftalik umumiy hajm o'smoqda (+4.2%). Barcha to'plamlarda maqsadli takrorlashga erishilganda og'irlikni +1.25kg dan +2.5kg ga oshirib boring.
+- **Avtoregulyatsiya**: Agar biror to'plam kutilmaganda RPE 9.5 ga yetsa, haddan tashqari charchoqning oldini olish uchun keyingi to'plamlarda og'irlikni 5-10% kamaytiring.`
+      : `Based on your current telemetry and logged training metrics:
 - **Progressive Overload**: Your rolling 4-week volume is tracking upward by +4.2%. Maintain progressive overload by either adding 1 rep per set or micro-loading +1.25kg to +2.5kg when all sets hit target reps with $\\ge$ 2 RIR.
 - **Autoregulation**: Remember our rule: if a set reaches RPE 9.5 unexpectedly, dial back subsequent sets by 5-10% to prevent excessive fatigue accumulation.`;
   }
@@ -187,19 +222,22 @@ Format recommendations with bullet points and clear tactical cues. Keep response
 
 // Real-Time Groq AI Workout Plan Generator Route
 app.post('/api/groq/workout-plan', async (req: Request, res: Response) => {
-  const { goal = 'hypertrophy', days = 4, level = 'intermediate', focus = 'balanced', userContext } = req.body;
+  const { goal = 'hypertrophy', days = 4, level = 'intermediate', focus = 'balanced', userContext, language } = req.body;
+
+  const isUzbek = language === 'uz';
 
   const systemPrompt = `You are YUKSAL AI Sports Science Periodization Engine.
 Generate a structured, scientifically autoregulated workout split.
 Keep to 3 to 4 core exercises per day.
+${isUzbek ? `Language: Uzbek (O'zbek tili, Latin script). Provide "name", "description", and day "title" in natural Uzbek (e.g., "YUKSAL AI: Shaxsiy Dastur", "Yuqori tana kuchi va gipertrofiya"). Keep exercise IDs standard.` : ''}
 Return ONLY valid JSON matching this schema:
 {
-  "name": "YUKSAL AI: Custom Split",
-  "description": "Short 1-sentence overview",
+  "name": "${isUzbek ? 'YUKSAL AI: Shaxsiy Dastur' : 'YUKSAL AI: Custom Split'}",
+  "description": "${isUzbek ? 'Ilmiy asoslangan individual mashgʻulot dasturi' : 'Short 1-sentence overview'}",
   "days": [
     {
       "dayNumber": 1,
-      "title": "Upper Power & Strength",
+      "title": "${isUzbek ? 'Yuqori tana kuchi va gipertrofiya' : 'Upper Power & Strength'}",
       "exercises": [
         { "id": "ex_barbell_bench_press", "sets": 4, "reps": "6-8", "rpe": 8.5 }
       ]
@@ -211,7 +249,7 @@ ex_barbell_bench_press, ex_incline_dumbbell_press, ex_cable_chest_flye, ex_barbe
 
 CRITICAL: Return strictly raw JSON. Do NOT output <think> tags or codeblocks.`;
 
-  const userPrompt = `Generate a ${days}-day ${goal} workout program for an ${level} athlete with special focus on ${focus}. Athlete context: ${JSON.stringify(userContext || {})}`;
+  const userPrompt = `Generate a ${days}-day ${goal} workout program for an ${level} athlete with special focus on ${focus}. Athlete context: ${JSON.stringify(userContext || {})}. ${isUzbek ? 'Language: Uzbek.' : ''}`;
 
   try {
     const rawResult = await callGroq([{ role: 'user', content: userPrompt }], systemPrompt, 0.2, 550, true);
@@ -245,16 +283,19 @@ CRITICAL: Return strictly raw JSON. Do NOT output <think> tags or codeblocks.`;
 
 // Real-Time Groq AI Diet Plan Generator Route
 app.post('/api/groq/diet-plan', async (req: Request, res: Response) => {
-  const { targetCalories = 2450, proteinTarget = 175, cuisine = 'Uzbekistan', userContext } = req.body;
+  const { targetCalories = 2450, proteinTarget = 175, cuisine = 'Uzbekistan', userContext, language } = req.body;
+
+  const isUzbek = language === 'uz';
 
   const systemPrompt = `You are YUKSAL AI Sports Nutritionist specializing in authentic Central Asian / Uzbekistan athletic nutrition.
 Create a complete 4-meal daily blueprint (breakfast, lunch, dinner, snack) tailored to EXACTLY ~${targetCalories} kcal and ~${proteinTarget}g protein.
 Dishes should incorporate authentic nutritious Uzbek dishes (e.g. Samarkand Osh with lean sirloin, Kazan beef shashlik, Kovurma lagman with durum noodles, Steamed manti, Kainama shorva bone collagen stew, Probiotic suzma with tandir non, dried apricots & nuts).
+${isUzbek ? `Language: Uzbek (O'zbek tili, Latin script). Provide "planName", "focus", and meal "name" and "desc" in natural Uzbek (e.g. "O'zbek Sportchi Oziqlanish Rejasi", "Osh devzira tovuq go'shti bilan", "Tandir non va suzma").` : ''}
 
 Return ONLY valid JSON matching this schema:
 {
-  "planName": "Uzbek Athlete Nutrition Blueprint",
-  "focus": "High-protein hypertrophy & endurance",
+  "planName": "${isUzbek ? "O'zbek Sportchi Oziqlanish Rejasi" : "Uzbek Athlete Nutrition Blueprint"}",
+  "focus": "${isUzbek ? "Yuqori oqsilli gipertrofiya va chidamlilik" : "High-protein hypertrophy & endurance"}",
   "totalCalories": 2450,
   "totalProtein": 175,
   "breakfast": { "name": "...", "desc": "1 sentence description", "calories": 550, "protein": 42, "carbs": 50, "fat": 18 },
@@ -264,7 +305,7 @@ Return ONLY valid JSON matching this schema:
 }
 CRITICAL: Descriptions MUST be 1 sentence only to keep JSON compact. Return strictly raw JSON. Do NOT output <think> tags or codeblocks.`;
 
-  const userPrompt = `Calibrate an authentic ${cuisine} athlete diet plan. Target Calories: ${targetCalories} kcal, Target Protein: ${proteinTarget}g.`;
+  const userPrompt = `Calibrate an authentic ${cuisine} athlete diet plan. Target Calories: ${targetCalories} kcal, Target Protein: ${proteinTarget}g. ${isUzbek ? 'Write dish names and descriptions in Uzbek.' : ''}`;
 
   try {
     const rawResult = await callGroq([{ role: 'user', content: userPrompt }], systemPrompt, 0.2, 550, true);

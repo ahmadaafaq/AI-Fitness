@@ -8,6 +8,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface AICoachModuleProps {
   userProfile: UserProfile;
@@ -26,17 +27,18 @@ export const AICoachModule: React.FC<AICoachModuleProps> = ({
   isMobileMode = false,
   onSaveChatHistory,
 }) => {
+  const { t, language } = useLanguage();
   const [messages, setMessages] = useState<ChatMessage[]>(chatHistory);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const suggestedQuestions = [
-    'Why has my bench press stalled?',
-    'How should I adjust my workout this week?',
-    'Am I eating enough protein for my goal?',
-    'Create a 4-day hypertrophy program for me.',
-    'How should I interpret an RPE 9 vs RPE 8?',
+    t('coach.q1'),
+    t('coach.q2'),
+    t('coach.q3'),
+    t('coach.q4'),
+    t('coach.q5'),
   ];
 
   const scrollToBottom = () => {
@@ -72,6 +74,7 @@ export const AICoachModule: React.FC<AICoachModuleProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: newMessages,
+          language,
           userContext: {
             name: userProfile.name,
             goal: userProfile.objective,
@@ -110,7 +113,13 @@ export const AICoachModule: React.FC<AICoachModuleProps> = ({
       const fallbackMsg: ChatMessage = {
         id: 'msg_' + (Date.now() + 1),
         role: 'assistant',
-        content: `### Autoregulation Protocol for High Fatigue:
+        content: language === 'uz'
+          ? `### Yuqori Charchoq Bo'yicha Avtoregulyatsiya Protokoli:
+- **Biometrik Tayyorgarlik**: Asab tizimida yuqori yuklama aniqlandi.
+- **To'plamlar**: Bugun har bir bazaviy mashqda 1 tadan kamroq to'plam bajaring.
+- **RIR Maqsadi**: Barcha ishchi to'plamlarni 2–3 RIR (RPE 7–8) darajasida to'xtating.
+- **Tiklanish**: Isinish harakatlari og'ir tuyulsa, mashg'ulotni yengil dinamik tiklanishga o'tkazing.`
+          : `### Autoregulation Protocol for High Fatigue:
 - **Biometric Readiness**: Elevated neuromuscular strain detected.
 - **Set Modification**: Drop back-off sets by 1 per compound movement today.
 - **RIR Target**: Cap all working sets at 2–3 RIR (RPE 7–8). Do not train to mechanical failure.
@@ -231,7 +240,7 @@ export const AICoachModule: React.FC<AICoachModuleProps> = ({
       <div className="flex items-center gap-2 shrink-0 pt-0.5">
         <input
           type="text"
-          placeholder="Ask YUKSAL Coach about plateau breaks, workout adjustments..."
+          placeholder={t('coach.inputPlaceholder')}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
@@ -240,6 +249,7 @@ export const AICoachModule: React.FC<AICoachModuleProps> = ({
         <button
           onClick={() => handleSendMessage()}
           disabled={!inputText.trim() || isLoading}
+          aria-label={t('coach.send')}
           className="p-2.5 bg-lime-400 hover:bg-lime-300 disabled:opacity-40 text-slate-950 rounded-xl font-bold transition-colors"
         >
           <Send className="w-3.5 h-3.5" />

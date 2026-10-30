@@ -32,6 +32,7 @@ import {
 import confetti from 'canvas-confetti';
 import { InteractiveMuscleMap } from './InteractiveMuscleMap';
 import { ExerciseAnimation } from './ExerciseAnimation';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface WorkoutModuleProps {
   userProfile?: UserProfile;
@@ -56,6 +57,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
   onSaveProgram,
   onDeleteSession,
 }) => {
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'programs' | 'library' | 'anatomy' | 'history'>('programs');
 
   // Exercise Library Filters
@@ -90,6 +92,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
           goal: aiGoal,
           level: aiLevel,
           focus: aiFocus,
+          language,
           userContext: {
             name: userProfile?.name || 'Athlete',
             weight: userProfile?.weightKg || 78,
@@ -547,10 +550,10 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18212C] pb-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Workout Management
+            {t('workout.title')}
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Structured periodization, 40+ exercise library & autoregulated logging
+            {t('workout.subtitle')}
           </p>
         </div>
 
@@ -560,7 +563,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
             className="flex items-center gap-2 px-4 py-2.5 bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-lime-500/20 transition-colors"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
-            Quick Workout
+            {t('workout.quickWorkout')}
           </button>
         </div>
       </div>
@@ -575,7 +578,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          {isMobileMode ? 'Splits' : 'Splits & Programs'}
+          {isMobileMode ? 'Splits' : t('workout.tabPrograms')}
         </button>
         <button
           onClick={() => setActiveTab('library')}
@@ -585,7 +588,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          {isMobileMode ? 'Library' : 'Exercise Library'}
+          {isMobileMode ? 'Library' : t('workout.tabLibrary')}
         </button>
         <button
           onClick={() => setActiveTab('anatomy')}
@@ -596,7 +599,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
           }`}
         >
           <Target className="w-3.5 h-3.5" />
-          <span>Muscle Map</span>
+          <span>{t('workout.tabAnatomy')}</span>
         </button>
         <button
           onClick={() => setActiveTab('history')}
@@ -606,7 +609,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          History
+          {t('workout.tabHistory')}
         </button>
       </div>
 
@@ -642,7 +645,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-                Training Programmes
+                {t('workout.trainingPrograms')}
               </h2>
               <p className="text-xs text-slate-400">
                 Scientifically calibrated splits with progressive overload
@@ -654,7 +657,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold rounded-lg transition-colors shrink-0 shadow-sm shadow-lime-500/20 active:scale-95 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 fill-current" />
-                <span>AI Planner</span>
+                <span>{t('workout.aiPlannerBtn')}</span>
               </button>
               <button
                 onClick={handleOpenNewProgram}
