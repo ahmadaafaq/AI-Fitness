@@ -170,7 +170,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
     const goalLabel = aiGoal === 'hypertrophy' ? 'Hypertrophy Engine' : aiGoal === 'strength' ? 'Peak Strength 1RM' : 'Metabolic Recomposition';
     const newProg: WorkoutProgram = {
       id: `prog_ai_${Date.now()}`,
-      name: `Kinetix AI: ${goalLabel}`,
+      name: `YUKSAL AI: ${goalLabel}`,
       description: `Sports-science autoregulated split with target RPE 8.0-9.0, scientific rest intervals, and progressive overload tracking.`,
       level: aiLevel,
       frequencyPerWeek: aiDays,

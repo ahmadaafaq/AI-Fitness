@@ -104,7 +104,7 @@ export const MasterclassesModule: React.FC<MasterclassesModuleProps> = ({
       category: 'Programming',
       imageUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80',
       description:
-        'Learn why static percentage-based training fails under real-life fatigue conditions and how Kinetix deterministic RPE/RIR equations safeguard progress and longevity.',
+        'Learn why static percentage-based training fails under real-life fatigue conditions and how YUKSAL deterministic RPE/RIR equations safeguard progress and longevity.',
       chapters: [
         { time: '00:00', title: 'The Problem with Static Percentage Charts' },
         { time: '09:20', title: 'Calibrating RPE 7, 8, 9 with Velocity Sensors' },
@@ -225,7 +225,7 @@ export const MasterclassesModule: React.FC<MasterclassesModuleProps> = ({
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-lime-400">
             <Video className="w-3.5 h-3.5" />
-            <span>Kinetix Masterclass Series</span>
+            <span>YUKSAL Masterclass Series</span>
           </div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white mt-0.5">
             Coach Video Masterclasses
@@ -258,7 +258,7 @@ export const MasterclassesModule: React.FC<MasterclassesModuleProps> = ({
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5 leading-snug">
-                Master Strength Coach & Olympic Biomechanics Consultant. Author of the Kinetix Framework.
+                Master Strength Coach & Olympic Biomechanics Consultant. Author of the YUKSAL Framework.
               </p>
             </div>
           </div>

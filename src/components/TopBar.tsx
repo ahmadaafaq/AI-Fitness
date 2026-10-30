@@ -24,10 +24,10 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Brand Zone */}
         <div className="flex items-center gap-2 shrink-0">
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-lime-400 flex items-center justify-center text-slate-950 font-black text-sm sm:text-base tracking-tighter shadow-sm shadow-lime-500/20 shrink-0">
-            K
+            Y
           </div>
           <span className="font-extrabold tracking-tight text-sm sm:text-base text-white font-mono uppercase whitespace-nowrap">
-            KINETIX<span className="text-lime-400 font-sans font-bold text-[10px] sm:text-xs ml-0.5">AI</span>
+            YUKSAL<span className="text-lime-400 font-sans font-bold text-[10px] sm:text-xs ml-0.5">AI</span>
           </span>
         </div>
 

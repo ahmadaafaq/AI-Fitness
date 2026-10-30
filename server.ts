@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 app.use(express.json());
 
@@ -46,7 +46,7 @@ app.post('/api/gemini/chat', async (req: Request, res: Response) => {
   // If Gemini client is active, call Gemini 3.8 Flash
   if (aiClient) {
     try {
-      const systemInstruction = `You are "KINETIX AI", an elite sports scientist, strength coach, and precision sports nutritionist.
+      const systemInstruction = `You are "YUKSAL AI", an elite sports scientist, strength coach, and precision sports nutritionist.
 You speak with professional clarity, evidence-based biomechanics, and actionable motivation.
 Tone: Concise, analytical, encouraging, and razor-sharp. Never prescribe medical treatments or make unsupported claims. Always prioritize joint integrity, progressive overload, and bio-individuality.
 
@@ -135,7 +135,7 @@ app.get('/api/food/search', async (req: Request, res: Response) => {
     const response = await fetch(offUrl, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'KinetixFitnessApp/1.0 (contact@kinetix.fitness)',
+        'User-Agent': 'YuksalFitnessApp/1.0 (contact@yuksal.fitness)',
       },
     });
     clearTimeout(timeout);
@@ -196,7 +196,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Kinetix AI full-stack server running on http://0.0.0.0:${PORT}`);
+    console.log(`YUKSAL AI full-stack server running on http://0.0.0.0:${PORT}`);
   });
 }
 

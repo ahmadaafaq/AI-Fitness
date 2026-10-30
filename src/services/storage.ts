@@ -21,20 +21,25 @@ import {
 } from '../data/mockData';
 
 const KEYS = {
-  PROFILE: 'kinetix_user_profile',
-  EXERCISES: 'kinetix_exercises',
-  PROGRAMS: 'kinetix_programs',
-  WORKOUT_HISTORY: 'kinetix_workout_history',
-  WEIGHT_LOGS: 'kinetix_weight_logs',
-  FOODS: 'kinetix_food_database',
-  MEALS: 'kinetix_meal_entries',
-  TELEMETRY: 'kinetix_telemetry',
-  CHAT_MESSAGES: 'kinetix_chat_messages',
+  PROFILE: 'yuksal_user_profile',
+  EXERCISES: 'yuksal_exercises',
+  PROGRAMS: 'yuksal_programs',
+  WORKOUT_HISTORY: 'yuksal_workout_history',
+  WEIGHT_LOGS: 'yuksal_weight_logs',
+  FOODS: 'yuksal_food_database',
+  MEALS: 'yuksal_meal_entries',
+  TELEMETRY: 'yuksal_telemetry',
+  CHAT_MESSAGES: 'yuksal_chat_messages',
 };
 
 function safeGet<T>(key: string, fallback: T): T {
   try {
-    const item = localStorage.getItem(key);
+    let item = localStorage.getItem(key);
+    // Backward-compatibility: Check legacy kinetix_ storage key if not yet set in yuksal_
+    if (!item && key.startsWith('yuksal_')) {
+      const legacyKey = key.replace('yuksal_', 'kinetix_');
+      item = localStorage.getItem(legacyKey);
+    }
     if (!item) return fallback;
     return JSON.parse(item) as T;
   } catch (err) {

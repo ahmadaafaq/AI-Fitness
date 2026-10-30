@@ -1,5 +1,5 @@
 {
-  "name": "Kinetix AI - Personal Fitness & Nutrition Coach",
+  "name": "YUKSAL - Personal Fitness & Nutrition Coach",
   "description": "Production-grade personal fitness coaching platform with intelligent workout tracking, deterministic autoregulation, comprehensive nutrition logging, and recovery telemetry.",
   "requestFramePermissions": [
     "camera"

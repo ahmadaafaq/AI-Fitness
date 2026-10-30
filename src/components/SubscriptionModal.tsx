@@ -44,7 +44,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({
       popular: true,
       features: [
         'Everything in Free',
-        'Kinetix AI Coach (Gemini 2.5 Flash)',
+        'YUKSAL AI Coach (Gemini 2.5 Flash)',
         'Deterministic autoregulation load adjustments',
         'Advanced nutrition & macro breakdown',
         'Bio-readiness & HRV recovery insights',
