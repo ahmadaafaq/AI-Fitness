@@ -38,12 +38,12 @@ export const Navigation: React.FC<NavigationProps> = ({
           className={`${positionClass} left-0 right-0 z-40 px-3 max-w-lg mx-auto pointer-events-auto`}
           style={{ bottom: isInsidePhoneFrame ? '68px' : 'calc(max(env(safe-area-inset-bottom, 0px), 12px) + 56px)' }}
         >
-          <div className="bg-[#121A20]/95 border border-lime-500/50 rounded-2xl p-2.5 shadow-2xl flex items-center justify-between backdrop-blur-xl">
+          <div className="bg-white/95 dark:bg-[#121A20]/95 border border-lime-500/60 rounded-2xl p-2.5 shadow-xl flex items-center justify-between backdrop-blur-xl">
             <div className="flex items-center gap-2.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-lime-400 animate-pulse shadow-sm shadow-lime-400" />
+              <div className="w-2.5 h-2.5 rounded-full bg-lime-500 dark:bg-lime-400 animate-pulse shadow-sm shadow-lime-400" />
               <div>
-                <p className="text-[11px] font-bold text-lime-400 leading-tight">Workout In Progress</p>
-                <p className="text-[10px] text-slate-400">Timer & set logger active</p>
+                <p className="text-[11px] font-bold text-lime-700 dark:text-lime-400 leading-tight">Workout In Progress</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">Timer & set logger active</p>
               </div>
             </div>
             <button

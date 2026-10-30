@@ -685,22 +685,22 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
                 <div
                   key={program.id}
                   id={`program-${program.id}`}
-                  className={`bg-[#10151C] border ${
+                  className={`bg-white dark:bg-[#10151C] border ${
                     isNewlyCreated
                       ? 'border-lime-400 ring-2 ring-lime-400/50 shadow-xl shadow-lime-500/20'
-                      : 'border-[#1E2734] hover:border-[#2B384B]'
+                      : 'border-slate-200 dark:border-[#1E2734] hover:border-slate-300 dark:hover:border-[#2B384B]'
                   } rounded-2xl overflow-hidden shadow-sm transition-all flex flex-col justify-between group`}
                 >
-                  {/* Visual Top Banner for Programme */}
+                  {/* Visual Top Banner for Programme - Light & Dark adaptive */}
                   <div
                     className={`h-24 p-4 flex items-end justify-between bg-gradient-to-r ${
                       isPpl
-                        ? 'from-emerald-950 via-slate-900 to-black'
+                        ? 'from-emerald-100 via-teal-50 to-emerald-50 dark:from-emerald-950 dark:via-slate-900 dark:to-black border-b border-emerald-200/80 dark:border-transparent'
                         : isUpper
-                        ? 'from-sky-950 via-slate-900 to-black'
+                        ? 'from-sky-100 via-blue-50 to-sky-50 dark:from-sky-950 dark:via-slate-900 dark:to-black border-b border-sky-200/80 dark:border-transparent'
                         : isFull
-                        ? 'from-amber-950 via-slate-900 to-black'
-                        : 'from-purple-950 via-slate-900 to-black'
+                        ? 'from-amber-100 via-orange-50 to-amber-50 dark:from-amber-950 dark:via-slate-900 dark:to-black border-b border-amber-200/80 dark:border-transparent'
+                        : 'from-purple-100 via-violet-50 to-purple-50 dark:from-purple-950 dark:via-slate-900 dark:to-black border-b border-purple-200/80 dark:border-transparent'
                     } relative`}
                   >
                     <div className="absolute top-3 right-3 flex items-center gap-1.5">
@@ -709,49 +709,59 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
                           ✨ NEWLY GENERATED
                         </span>
                       )}
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-lime-400 font-bold border border-lime-500/20">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/80 dark:bg-black/60 backdrop-blur-md text-slate-800 dark:text-lime-400 font-bold border border-slate-300/80 dark:border-lime-500/20 shadow-sm">
                         {program.frequencyPerWeek} Days/Wk
                       </span>
                       {program.isCustom && (
-                        <span className="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded">
                           Custom
                         </span>
                       )}
                     </div>
 
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-lime-400">
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wider ${
+                          isPpl
+                            ? 'text-emerald-800 dark:text-lime-400'
+                            : isUpper
+                            ? 'text-sky-800 dark:text-sky-300'
+                            : isFull
+                            ? 'text-amber-800 dark:text-amber-300'
+                            : 'text-purple-800 dark:text-purple-300'
+                        }`}
+                      >
                         {program.level} Split
                       </span>
-                      <h3 className="text-base font-extrabold text-white mt-0.5">{program.name}</h3>
+                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">{program.name}</h3>
                     </div>
                   </div>
 
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div>
-                      <p className="text-xs text-slate-400 leading-relaxed mb-4">{program.description}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">{program.description}</p>
 
                       {/* Program Days List */}
                       <div className="space-y-2 mb-4">
-                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                           Workouts in this Split:
                         </span>
                         {program.days.map((day, dIdx) => (
                           <div
                             key={dIdx}
-                            className="p-3 rounded-xl bg-[#141B24] border border-[#202B3A] space-y-2.5"
+                            className="p-3 rounded-xl bg-slate-50 dark:bg-[#141B24] border border-slate-200 dark:border-[#202B3A] space-y-2.5"
                           >
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="text-xs font-bold text-slate-200">{day.title}</p>
-                                <p className="text-[11px] text-slate-400">
+                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{day.title}</p>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                                   {day.exercises.length} Movements · ~
                                   {day.exercises.reduce((s, e) => s + e.targetSets, 0)} Total Sets
                                 </p>
                               </div>
                               <button
                                 onClick={() => onStartProgramDay(program, dIdx)}
-                                className="flex items-center gap-1 px-3 py-1 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold rounded-lg transition-colors"
+                                className="flex items-center gap-1 px-3 py-1 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold rounded-lg transition-colors shadow-sm"
                               >
                                 <Play className="w-3 h-3 fill-current" />
                                 Start
@@ -777,19 +787,19 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
                                   <div
                                     key={pIdx}
                                     onClick={() => setSelectedExerciseModal(exData)}
-                                    className="w-22 shrink-0 bg-[#0F151D] hover:bg-[#16202B] rounded-xl p-1.5 border border-[#212E3D] hover:border-lime-500/50 cursor-pointer group transition-all"
+                                    className="w-22 shrink-0 bg-white dark:bg-[#0F151D] hover:bg-slate-100 dark:hover:bg-[#16202B] rounded-xl p-1.5 border border-slate-200 dark:border-[#212E3D] hover:border-lime-500/50 cursor-pointer group transition-all shadow-xs"
                                     title={`Click to view ${exData.name} form animation`}
                                   >
-                                    <div className="w-full h-12 rounded-lg bg-black/60 overflow-hidden mb-1 flex items-center justify-center">
+                                    <div className="w-full h-12 rounded-lg bg-slate-100 dark:bg-black/60 overflow-hidden mb-1 flex items-center justify-center">
                                       <ExerciseAnimation exercise={exData} isThumbnail={true} className="w-full h-full" />
                                     </div>
-                                    <p className="text-[10px] font-bold text-slate-300 group-hover:text-lime-400 truncate">
+                                    <p className="text-[10px] font-bold text-slate-800 dark:text-slate-300 group-hover:text-lime-600 dark:group-hover:text-lime-400 truncate">
                                       {exData.name}
                                     </p>
-                                    <p className="text-[9px] text-slate-400 font-mono">
+                                    <p className="text-[9px] text-slate-500 dark:text-slate-400 font-mono">
                                       {pEx.targetSets} × {pEx.targetReps}
                                     </p>
-                                    <p className="text-[9px] text-lime-400 font-mono font-bold">
+                                    <p className="text-[9px] text-lime-700 dark:text-lime-400 font-mono font-bold">
                                       Load: {load.targetWeightKg}kg
                                     </p>
                                   </div>

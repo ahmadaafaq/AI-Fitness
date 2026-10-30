@@ -340,17 +340,17 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
   return (
     <div className="space-y-4 pb-28">
       {/* Sticky Top Live Metrics Bar */}
-      <div className="sticky top-12 z-20 bg-[#0B0F13]/95 backdrop-blur-md border border-[#1C2532] py-2.5 px-3 rounded-xl shadow-lg">
+      <div className="sticky top-12 z-20 bg-white/95 dark:bg-[#0B0F13]/95 backdrop-blur-md border border-slate-200 dark:border-[#1C2532] py-2.5 px-3 rounded-xl shadow-md dark:shadow-lg">
         <div className="flex items-center justify-between gap-3">
           {/* Workout Title & Elapsed Clock */}
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
-              <h2 className="text-sm font-extrabold text-white truncate max-w-[150px] sm:max-w-xs">
+              <span className="w-2 h-2 rounded-full bg-lime-500 dark:bg-lime-400 animate-pulse" />
+              <h2 className="text-sm font-extrabold text-slate-900 dark:text-white truncate max-w-[150px] sm:max-w-xs">
                 {session.dayTitle}
               </h2>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-lime-400 font-mono font-bold mt-0.5">
+            <div className="flex items-center gap-1.5 text-xs text-lime-700 dark:text-lime-400 font-mono font-bold mt-0.5">
               <Clock className="w-3.5 h-3.5" />
               <span>{formatTime(elapsedSeconds)}</span>
             </div>
@@ -359,15 +359,15 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
           {/* Quick Metrics */}
           <div className="flex items-center gap-4 text-right">
             <div>
-              <p className="text-[10px] text-slate-400 uppercase font-medium">Volume</p>
-              <p className="text-sm font-extrabold text-white font-mono tabular-nums">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-medium">Volume</p>
+              <p className="text-sm font-extrabold text-slate-900 dark:text-white font-mono tabular-nums">
                 {totalVolumeKg.toLocaleString()}{' '}
-                <span className="text-[10px] font-sans text-slate-400">kg</span>
+                <span className="text-[10px] font-sans text-slate-500 dark:text-slate-400">kg</span>
               </p>
             </div>
             <div>
-              <p className="text-[10px] text-slate-400 uppercase font-medium">Sets</p>
-              <p className="text-sm font-extrabold text-lime-400 font-mono tabular-nums">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-medium">Sets</p>
+              <p className="text-sm font-extrabold text-lime-700 dark:text-lime-400 font-mono tabular-nums">
                 {totalCompletedSets}
               </p>
             </div>
@@ -377,7 +377,7 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={onCancelWorkout}
-              className="p-1.5 text-slate-400 hover:text-slate-200 text-xs rounded-lg hover:bg-[#161F29]"
+              className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs rounded-lg hover:bg-slate-100 dark:hover:bg-[#161F29]"
               title="Cancel Workout"
             >
               <X className="w-4 h-4" />
@@ -559,14 +559,14 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
                       key={set.id}
                       className={`rounded-2xl border p-3.5 transition-all ${
                         set.completed
-                          ? 'bg-lime-500/[0.06] border-lime-500/50 shadow-sm'
-                          : 'bg-[#141B24] border-[#202B3A] hover:border-[#2C3B4E]'
+                          ? 'bg-lime-500/[0.08] dark:bg-lime-500/[0.06] border-lime-500/50 shadow-sm'
+                          : 'bg-slate-50/70 dark:bg-[#141B24] border-slate-200 dark:border-[#202B3A] hover:border-slate-300 dark:hover:border-[#2C3B4E]'
                       }`}
                     >
                       {/* Set Card Top Header: Set Number, Program Prescribed Load badge, Slide to Complete Toggle */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1E2938] pb-2.5 mb-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-[#1E2938] pb-2.5 mb-3">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="w-6 h-6 rounded-lg bg-[#1E2A38] text-white font-mono font-bold text-xs flex items-center justify-center">
+                          <span className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-[#1E2A38] text-slate-800 dark:text-white font-mono font-bold text-xs flex items-center justify-center">
                             {set.setNumber}
                           </span>
                           <select
@@ -574,7 +574,7 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
                             onChange={(e) =>
                               handleUpdateSet(exIdx, setIdx, { setType: e.target.value as SetType })
                             }
-                            className="bg-[#18222D] border border-[#273547] rounded-md px-2 py-0.5 text-[11px] font-semibold text-slate-300"
+                            className="bg-white dark:bg-[#18222D] border border-slate-200 dark:border-[#273547] rounded-md px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300 shadow-sm"
                           >
                             <option value="warmup">Warm-up</option>
                             <option value="working">Working</option>
@@ -582,7 +582,7 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
                           </select>
 
                           {/* Prepared by Program Load Badge */}
-                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-lime-400/10 text-lime-400 border border-lime-400/30 text-[10px] font-mono font-bold">
+                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-lime-500/10 dark:bg-lime-400/10 text-lime-800 dark:text-lime-400 border border-lime-500/30 dark:border-lime-400/30 text-[10px] font-mono font-bold">
                             <span>🎯 Prescribed: {set.targetWeightKg} kg × {set.targetReps} reps</span>
                           </div>
                         </div>
@@ -590,7 +590,7 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
                         <div className="flex items-center gap-3">
                           {/* Slide-to-Complete Switch Slider */}
                           <label className="flex items-center gap-2 cursor-pointer select-none">
-                            <span className="text-[11px] font-bold text-slate-300 hidden sm:inline">
+                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 hidden sm:inline">
                               {set.completed ? '✓ Completed' : 'Slide to Complete'}
                             </span>
                             <div className="relative">
@@ -600,14 +600,14 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
                                 onChange={() => handleToggleCompleteSet(exIdx, setIdx)}
                                 className="sr-only peer"
                               />
-                              <div className="w-12 h-6 bg-[#1A2533] peer-focus:outline-none rounded-full peer peer-checked:bg-lime-400 transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6 peer-checked:after:bg-slate-950 shadow-inner"></div>
+                              <div className="w-12 h-6 bg-slate-200 dark:bg-[#1A2533] peer-focus:outline-none rounded-full peer peer-checked:bg-lime-400 transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6 peer-checked:after:bg-slate-950 shadow-inner"></div>
                             </div>
                           </label>
 
                           <button
                             type="button"
                             onClick={() => handleRemoveSet(exIdx, setIdx)}
-                            className="text-slate-500 hover:text-red-400 p-1"
+                            className="text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 p-1"
                             title="Delete Set"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -618,14 +618,14 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
                       {/* SLIDERS GRID: Weight Slider & Reps Slider & Effort Slider */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                         {/* 1. Weight Load Slider */}
-                        <div className="bg-[#0F161F] p-3 rounded-xl border border-[#1A2430]">
+                        <div className="bg-white dark:bg-[#0F161F] p-3 rounded-xl border border-slate-200 dark:border-[#1A2430] shadow-sm">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
-                              <Sliders className="w-3 h-3 text-lime-400" />
+                            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                              <Sliders className="w-3 h-3 text-lime-600 dark:text-lime-400" />
                               <span>Weight (Load)</span>
                             </span>
-                            <span className="text-base font-black text-lime-400 font-mono">
-                              {set.actualWeightKg} <span className="text-[11px] text-slate-400 font-normal">kg</span>
+                            <span className="text-base font-black text-lime-700 dark:text-lime-400 font-mono">
+                              {set.actualWeightKg} <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">kg</span>
                             </span>
                           </div>
                           <input
@@ -637,24 +637,24 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
                             onChange={(e) =>
                               handleUpdateSet(exIdx, setIdx, { actualWeightKg: parseFloat(e.target.value) })
                             }
-                            className="w-full accent-lime-400 h-2.5 bg-[#1C2735] rounded-lg cursor-pointer"
+                            className="w-full accent-lime-500 dark:accent-lime-400 h-2.5 bg-slate-200 dark:bg-[#1C2735] rounded-lg cursor-pointer"
                           />
                           <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
                             <span>0 kg</span>
-                            <span className="text-lime-400 font-bold">Program Target: {set.targetWeightKg} kg</span>
+                            <span className="text-lime-700 dark:text-lime-400 font-bold">Program Target: {set.targetWeightKg} kg</span>
                             <span>{maxWeight} kg</span>
                           </div>
                         </div>
 
                         {/* 2. Reps Target Slider */}
-                        <div className="bg-[#0F161F] p-3 rounded-xl border border-[#1A2430]">
+                        <div className="bg-white dark:bg-[#0F161F] p-3 rounded-xl border border-slate-200 dark:border-[#1A2430] shadow-sm">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
-                              <Sliders className="w-3 h-3 text-white" />
+                            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                              <Sliders className="w-3 h-3 text-slate-700 dark:text-white" />
                               <span>Reps (Target)</span>
                             </span>
-                            <span className="text-base font-black text-white font-mono">
-                              {set.actualReps} <span className="text-[11px] text-slate-400 font-normal">reps</span>
+                            <span className="text-base font-black text-slate-900 dark:text-white font-mono">
+                              {set.actualReps} <span className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">reps</span>
                             </span>
                           </div>
                           <input
@@ -666,23 +666,23 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
                             onChange={(e) =>
                               handleUpdateSet(exIdx, setIdx, { actualReps: parseInt(e.target.value) })
                             }
-                            className="w-full accent-lime-400 h-2.5 bg-[#1C2735] rounded-lg cursor-pointer"
+                            className="w-full accent-lime-500 dark:accent-lime-400 h-2.5 bg-slate-200 dark:bg-[#1C2735] rounded-lg cursor-pointer"
                           />
                           <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
                             <span>1 rep</span>
-                            <span className="text-white font-bold">Program Target: {set.targetReps} reps</span>
+                            <span className="text-slate-800 dark:text-white font-bold">Program Target: {set.targetReps} reps</span>
                             <span>30 reps</span>
                           </div>
                         </div>
 
                         {/* 3. Intensity & RIR Slider */}
-                        <div className="md:col-span-2 bg-[#0F161F] p-3 rounded-xl border border-[#1A2430]">
+                        <div className="md:col-span-2 bg-white dark:bg-[#0F161F] p-3 rounded-xl border border-slate-200 dark:border-[#1A2430] shadow-sm">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
-                              <Sliders className="w-3 h-3 text-sky-400" />
+                            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                              <Sliders className="w-3 h-3 text-sky-600 dark:text-sky-400" />
                               <span>Autoregulated Intensity (RPE & RIR)</span>
                             </span>
-                            <span className="text-xs font-bold text-sky-400 font-mono">
+                            <span className="text-xs font-bold text-sky-700 dark:text-sky-400 font-mono">
                               RPE {set.rpe} · {rpeToRir(set.rpe)} RIR (Reps in Reserve)
                             </span>
                           </div>
@@ -695,12 +695,12 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
                             onChange={(e) =>
                               handleUpdateSet(exIdx, setIdx, { rpe: parseFloat(e.target.value) })
                             }
-                            className="w-full accent-sky-400 h-2 bg-[#1C2735] rounded-lg cursor-pointer"
+                            className="w-full accent-sky-500 dark:accent-sky-400 h-2 bg-slate-200 dark:bg-[#1C2735] rounded-lg cursor-pointer"
                           />
                           <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
                             <span>RPE 6 (Warmup)</span>
-                            <span className="text-sky-400 font-bold">RPE 8 (Hypertrophy Sweet Spot)</span>
-                            <span className="text-rose-400">RPE 10 (Max Failure)</span>
+                            <span className="text-sky-700 dark:text-sky-400 font-bold">RPE 8 (Hypertrophy Sweet Spot)</span>
+                            <span className="text-rose-600 dark:text-rose-400 font-semibold">RPE 10 (Max Failure)</span>
                           </div>
                         </div>
                       </div>

@@ -368,11 +368,18 @@ html.light .bg-\[\#090D10\],
 html.light .bg-\[\#090D11\],
 html.light .bg-\[\#0A0D12\],
 html.light .bg-\[\#0A0E13\],
-html.light .bg-\[\#0B0F13\] {
+html.light .bg-\[\#0B0F13\],
+html.light [class*="bg-[#05070A]"],
+html.light [class*="bg-[#080B0E]"],
+html.light [class*="bg-[#090D10]"],
+html.light [class*="bg-[#090D11]"],
+html.light [class*="bg-[#0A0D12]"],
+html.light [class*="bg-[#0A0E13]"],
+html.light [class*="bg-[#0B0F13]"] {
   background-color: #F8FAFC !important;
 }
 
-/* Primary cards, containers, panels, modals */
+/* Primary cards, containers, panels, modals (including with opacity suffixes) */
 html.light .bg-\[\#0D1217\],
 html.light .bg-\[\#0F151D\],
 html.light .bg-\[\#0F161E\],
@@ -411,41 +418,61 @@ html.light .bg-\[\#18202A\],
 html.light .bg-\[\#18222D\],
 html.light .bg-\[\#18222F\],
 html.light .bg-\[\#18232E\],
-html.light .bg-\[\#182330\] {
+html.light .bg-\[\#182330\],
+html.light [class*="bg-[#10151C]"],
+html.light [class*="bg-[#121A20]"],
+html.light [class*="bg-[#121A22]"],
+html.light [class*="bg-[#141B24]"],
+html.light [class*="bg-[#141C25]"],
+html.light [class*="bg-[#0E131A]"],
+html.light [class*="bg-[#202B3A]"] {
   background-color: #FFFFFF !important;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
 }
 
-/* Secondary / Elevated rows, pill tags, hover states */
+/* Secondary / Elevated rows, pill tags, slider containers, inner wells */
+html.light .bg-\[\#0F161F\],
+html.light [class*="bg-[#0F161F]"],
 html.light .bg-\[\#1A232E\],
+html.light .bg-\[\#1A2430\],
 html.light .bg-\[\#1A2533\],
 html.light .bg-\[\#1C2533\],
 html.light .bg-\[\#1C2633\],
 html.light .bg-\[\#1C2735\],
+html.light .bg-\[\#1E2A38\],
 html.light .bg-\[\#1E2B3A\],
 html.light .bg-\[\#1E2B3B\],
 html.light .bg-\[\#1F2937\],
 html.light .bg-\[\#1F2C3C\],
-html.light .bg-\[\#253243\] {
-  background-color: #F1F5F9 !important;
+html.light .bg-\[\#253243\],
+html.light [class*="bg-[#1A2533]"],
+html.light [class*="bg-[#1C2735]"],
+html.light [class*="bg-[#1E2A38]"] {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
 }
 
 /* Semi-translucent bars and fixed navigations */
 html.light header,
-html.light header.bg-\[\#090D10\]\/95,
-html.light .bg-\[\#090D10\]\/95,
-html.light .bg-\[\#090D10\]\/90 {
+html.light [class*="bg-[#090D10]/95"],
+html.light [class*="bg-[#090D10]/90"],
+html.light [class*="bg-[#0B0F13]/95"],
+html.light [class*="bg-[#121A20]/95"] {
   background-color: rgba(255, 255, 255, 0.96) !important;
-  border-bottom-color: #E2E8F0 !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.06) !important;
 }
 
 html.light nav,
-html.light nav.bg-\[\#090D10\]\/95,
-html.light nav.bg-\[\#090D10\] {
+html.light [class*="bg-[#090D10]/95"] nav {
   background-color: rgba(255, 255, 255, 0.96) !important;
   border-top-color: #E2E8F0 !important;
   box-shadow: 0 -2px 10px 0 rgba(0, 0, 0, 0.03);
+}
+
+/* Range input sliders in light mode */
+html.light input[type="range"] {
+  background-color: #E2E8F0 !important;
 }
 
 /* Dark mode border utilities mapped to crisp light slate */
@@ -529,6 +556,53 @@ html.light textarea {
 html.light input::placeholder,
 html.light textarea::placeholder {
   color: #94A3B8 !important;
+}
+
+/* Workout Programme split banners in Light Mode */
+html.light .from-emerald-950 {
+  background-image: linear-gradient(to right, #ECFDF5, #F0FDF4, #DCFCE7) !important;
+  border-bottom: 1px solid #A7F3D0 !important;
+}
+html.light .from-sky-950 {
+  background-image: linear-gradient(to right, #F0F9FF, #F8FAFC, #E0F2FE) !important;
+  border-bottom: 1px solid #BAE6FD !important;
+}
+html.light .from-amber-950 {
+  background-image: linear-gradient(to right, #FFFBEB, #FEF3C7, #FDE68A) !important;
+  border-bottom: 1px solid #FCD34D !important;
+}
+html.light .from-purple-950 {
+  background-image: linear-gradient(to right, #FAF5FF, #F3E8FF, #E9D5FF) !important;
+  border-bottom: 1px solid #DDD6FE !important;
+}
+
+html.light .from-emerald-950 h3,
+html.light .from-sky-950 h3,
+html.light .from-amber-950 h3,
+html.light .from-purple-950 h3 {
+  color: #0F172A !important;
+}
+
+html.light .from-emerald-950 .text-lime-400 {
+  color: #065F46 !important;
+}
+html.light .from-sky-950 .text-lime-400 {
+  color: #0369A1 !important;
+}
+html.light .from-amber-950 .text-lime-400 {
+  color: #92400E !important;
+}
+html.light .from-purple-950 .text-lime-400 {
+  color: #6B21A8 !important;
+}
+
+html.light .from-emerald-950 .bg-black\/60,
+html.light .from-sky-950 .bg-black\/60,
+html.light .from-amber-950 .bg-black\/60,
+html.light .from-purple-950 .bg-black\/60 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
 }
 
 /* Light mode styling for special accent banners with dark gradients */
