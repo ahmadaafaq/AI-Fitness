@@ -28,6 +28,7 @@ import {
   Activity,
   Sparkles,
   Loader2,
+  ArrowLeft,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { InteractiveMuscleMap } from './InteractiveMuscleMap';
@@ -40,6 +41,7 @@ interface WorkoutModuleProps {
   exercises: Exercise[];
   history: WorkoutSession[];
   isMobileMode?: boolean;
+  onBack?: () => void;
   onStartProgramDay: (program: WorkoutProgram, dayIndex: number) => void;
   onStartEmptyWorkout: () => void;
   onSaveProgram: (program: WorkoutProgram) => void;
@@ -52,6 +54,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
   exercises,
   history,
   isMobileMode = false,
+  onBack,
   onStartProgramDay,
   onStartEmptyWorkout,
   onSaveProgram,
@@ -548,13 +551,27 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
     <div className="space-y-6 pb-20">
       {/* Top Header & Fast Start */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18212C] pb-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            {t('workout.title')}
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            {t('workout.subtitle')}
-          </p>
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {onBack && (
+            <button
+              onClick={onBack}
+              id="workout-back-btn"
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#121922] hover:bg-[#18222F] border border-[#1E2734] hover:border-lime-400 text-slate-200 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer shrink-0 shadow-sm active:scale-95"
+              title={t('common.back', 'Back')}
+              aria-label="Back to previous screen"
+            >
+              <ArrowLeft className="w-4 h-4 text-lime-400" />
+              <span className="text-[11px] font-semibold">{t('common.back', 'Back')}</span>
+            </button>
+          )}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              {t('workout.title')}
+            </h1>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {t('workout.subtitle')}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">

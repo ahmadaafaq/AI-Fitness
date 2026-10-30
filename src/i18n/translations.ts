@@ -30,6 +30,16 @@ export const translations: Translations = {
     uz: 'Darslar',
   },
 
+  // Common
+  'common.back': {
+    en: 'Back',
+    uz: 'Orqaga',
+  },
+  'common.backToHome': {
+    en: 'Back to Home',
+    uz: 'Bosh sahifaga qaytish',
+  },
+
   // TopBar
   'topbar.profile': {
     en: 'Profile',

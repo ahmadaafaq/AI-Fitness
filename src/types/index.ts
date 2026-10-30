@@ -167,6 +167,7 @@ export interface MealEntry {
   protein: number;
   carbs: number;
   fat: number;
+  servingWeightGrams?: number;
 }
 
 export interface WeightLog {

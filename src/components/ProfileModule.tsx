@@ -18,11 +18,14 @@ import {
   Shield,
   Layers,
   Sparkles,
+  ArrowLeft,
 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ProfileModuleProps {
   userProfile: UserProfile;
   isMobileMode?: boolean;
+  onBack?: () => void;
   onUpdateProfile: (updated: UserProfile) => void;
   onResetAllData: () => void;
   onOpenOnboarding: () => void;
@@ -31,10 +34,12 @@ interface ProfileModuleProps {
 export const ProfileModule: React.FC<ProfileModuleProps> = ({
   userProfile,
   isMobileMode = false,
+  onBack,
   onUpdateProfile,
   onResetAllData,
   onOpenOnboarding,
 }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<UserProfile>(userProfile);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
@@ -89,13 +94,27 @@ export const ProfileModule: React.FC<ProfileModuleProps> = ({
     <div className="space-y-6 pb-20">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18212C] pb-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Athlete Profile & Settings
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Configure biometrics, training parameters, unit preferences, and nutrition engine
-          </p>
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {onBack && (
+            <button
+              onClick={onBack}
+              id="profile-back-btn"
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#121922] hover:bg-[#18222F] border border-[#1E2734] hover:border-lime-400 text-slate-200 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer shrink-0 shadow-sm active:scale-95"
+              title={t('common.back', 'Back')}
+              aria-label="Back to previous screen"
+            >
+              <ArrowLeft className="w-4 h-4 text-lime-400" />
+              <span className="text-[11px] font-semibold">{t('common.back', 'Back')}</span>
+            </button>
+          )}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Athlete Profile & Settings
+            </h1>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Configure biometrics, training parameters, unit preferences, and nutrition engine
+            </p>
+          </div>
         </div>
 
         <button

@@ -6,6 +6,8 @@ import {
   Bot,
   User,
   ArrowRight,
+  ArrowLeft,
+  X,
 } from 'lucide-react';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -16,6 +18,7 @@ interface AICoachModuleProps {
   todayMeals: MealEntry[];
   chatHistory: ChatMessage[];
   isMobileMode?: boolean;
+  onClose?: () => void;
   onSaveChatHistory: (messages: ChatMessage[]) => void;
 }
 
@@ -25,6 +28,7 @@ export const AICoachModule: React.FC<AICoachModuleProps> = ({
   todayMeals,
   chatHistory,
   isMobileMode = false,
+  onClose,
   onSaveChatHistory,
 }) => {
   const { t, language } = useLanguage();
@@ -140,6 +144,18 @@ export const AICoachModule: React.FC<AICoachModuleProps> = ({
       {/* Sleek, Compact AI Sports Scientist Banner (Smaller height) */}
       <div className="bg-[#10151C] border border-[#1E2734] rounded-xl px-3 py-2 shadow-sm shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-2">
+          {onClose && (
+            <button
+              onClick={onClose}
+              id="coach-back-btn"
+              className="p-1 px-2 rounded-lg bg-[#141D27] hover:bg-[#1A2533] border border-[#223040] hover:border-lime-400 text-slate-200 text-xs font-bold transition-all flex items-center gap-1 active:scale-95 cursor-pointer mr-1"
+              title={t('common.back', 'Back')}
+              aria-label="Back"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-lime-400" />
+              <span className="text-[11px] font-semibold">{t('common.back', 'Back')}</span>
+            </button>
+          )}
           <div className="p-1 rounded-lg bg-lime-500/10 text-lime-400">
             <Sparkles className="w-3.5 h-3.5" />
           </div>
@@ -154,10 +170,21 @@ export const AICoachModule: React.FC<AICoachModuleProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono">
-          <span className="text-slate-200 font-semibold">{userProfile.weightKg}kg</span>
-          <span>·</span>
-          <span className="capitalize">{userProfile.objective.replace('_', ' ')}</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono">
+            <span className="text-slate-200 font-semibold">{userProfile.weightKg}kg</span>
+            <span>·</span>
+            <span className="capitalize">{userProfile.objective.replace('_', ' ')}</span>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-[#1A2533] cursor-pointer"
+              title="Close coach"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 

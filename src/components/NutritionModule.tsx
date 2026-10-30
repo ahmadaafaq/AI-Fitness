@@ -14,6 +14,8 @@ import {
   Sparkles,
   ChefHat,
   Loader2,
+  ChevronDown,
+  ArrowLeft,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -23,6 +25,7 @@ interface NutritionModuleProps {
   mealEntries: MealEntry[];
   foodDatabase: FoodItem[];
   isMobileMode?: boolean;
+  onBack?: () => void;
   onAddMealEntry: (entry: MealEntry) => void;
   onDeleteMealEntry: (id: string) => void;
   onSaveCustomFood: (food: FoodItem) => void;
@@ -33,6 +36,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
   mealEntries,
   foodDatabase,
   isMobileMode = false,
+  onBack,
   onAddMealEntry,
   onDeleteMealEntry,
   onSaveCustomFood,
@@ -40,6 +44,21 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
   const { t, language } = useLanguage();
   const [selectedDate, setSelectedDate] = useState<string>('2026-10-30');
   const [activeMealType, setActiveMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('breakfast');
+
+  // Accordion state for meal cards (Breakfast, Lunch, Dinner, Snack)
+  const [expandedMeals, setExpandedMeals] = useState<Record<string, boolean>>({
+    breakfast: true,
+    lunch: true,
+    dinner: true,
+    snack: true,
+  });
+
+  const toggleMealAccordion = (mealId: string) => {
+    setExpandedMeals((prev) => ({
+      ...prev,
+      [mealId]: !prev[mealId],
+    }));
+  };
 
   // Food logging modal state
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
@@ -468,6 +487,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
         foodId: `uz_dish_${idx}`,
         foodName: item.name,
         servings: 1,
+        servingWeightGrams: 250,
         calories: item.calories,
         protein: item.protein,
         carbs: item.carbs,
@@ -501,6 +521,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
       foodId: dish.id,
       foodName: dish.name,
       servings: 1,
+      servingWeightGrams: 220,
       calories: dish.calories,
       protein: dish.protein,
       carbs: dish.carbs,
@@ -525,6 +546,37 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
   const fatTarget = userProfile.macroTargets?.fat || 75;
 
   const remainingCalories = Math.max(0, targetCalories - totalCalories);
+
+  // Computes the actual weight in grams for a given meal entry
+  const getEntryGrams = (entry: MealEntry): number => {
+    if (entry.servingWeightGrams) {
+      return Math.round(entry.servingWeightGrams * entry.servings);
+    }
+    const food = foodDatabase.find((f) => f.id === entry.foodId);
+    if (food && food.servingWeightGrams) {
+      return Math.round(food.servingWeightGrams * entry.servings);
+    }
+    const uzbekDish = uzbekDishesList.find(
+      (d) => d.id === entry.foodId || d.name.toLowerCase() === entry.foodName.toLowerCase()
+    );
+    if (uzbekDish) {
+      return Math.round(250 * entry.servings);
+    }
+    const match = (entry.foodName || '').match(/(\d+)\s*g/i);
+    if (match) {
+      return Math.round(parseInt(match[1], 10) * entry.servings);
+    }
+    const name = entry.foodName.toLowerCase();
+    if (name.includes('whey') || name.includes('isolate') || name.includes('powder')) return Math.round(30 * entry.servings);
+    if (name.includes('oil') || name.includes('butter')) return Math.round(14 * entry.servings);
+    if (name.includes('oat')) return Math.round(80 * entry.servings);
+    if (name.includes('rice') || name.includes('potato') || name.includes('plov') || name.includes('osh')) return Math.round(200 * entry.servings);
+    if (name.includes('chicken') || name.includes('beef') || name.includes('meat') || name.includes('fish') || name.includes('salmon')) return Math.round(150 * entry.servings);
+    if (name.includes('non') || name.includes('bread')) return Math.round(120 * entry.servings);
+    if (name.includes('yogurt')) return Math.round(170 * entry.servings);
+    if (name.includes('egg')) return Math.round(100 * entry.servings);
+    return Math.round(100 * entry.servings);
+  };
 
   // Food Search: Queries local database and tries Open Food Facts proxy if available
   const handleSearchFoods = async (q: string) => {
@@ -582,6 +634,7 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
       foodId: selectedFood.id,
       foodName: selectedFood.name,
       servings: servingMultiplier,
+      servingWeightGrams: selectedFood.servingWeightGrams || 100,
       calories: Math.round(selectedFood.calories * servingMultiplier),
       protein: Math.round(selectedFood.protein * servingMultiplier * 10) / 10,
       carbs: Math.round(selectedFood.carbs * servingMultiplier * 10) / 10,
@@ -643,13 +696,27 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
 
       {/* Header & Date */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18212C] pb-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            {t('nutrition.title', 'Precision Nutrition')}
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            {t('nutrition.subtitle', 'Targeted macronutrients, high-density fuel & Open Food Facts integration')}
-          </p>
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {onBack && (
+            <button
+              onClick={onBack}
+              id="nutrition-back-btn"
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#121922] hover:bg-[#18222F] border border-[#1E2734] hover:border-lime-400 text-slate-200 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer shrink-0 shadow-sm active:scale-95"
+              title={t('common.back', 'Back')}
+              aria-label="Back to previous screen"
+            >
+              <ArrowLeft className="w-4 h-4 text-lime-400" />
+              <span className="text-[11px] font-semibold">{t('common.back', 'Back')}</span>
+            </button>
+          )}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              {t('nutrition.title', 'Precision Nutrition')}
+            </h1>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {t('nutrition.subtitle', 'Targeted macronutrients, high-density fuel & Open Food Facts integration')}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -845,114 +912,149 @@ export const NutritionModule: React.FC<NutritionModuleProps> = ({
         </div>
       </div>
 
-      {/* Meals Sections: Breakfast, Lunch, Dinner, Snack */}
+      {/* Meals Sections: Breakfast, Lunch, Dinner, Snack (Interactive Accordions) */}
       <div className="space-y-4">
         {mealsList.map((meal) => {
           const currentMealItems = dateMeals.filter((m) => m.mealType === meal.id);
           const mealCalories = currentMealItems.reduce((acc, m) => acc + m.calories, 0);
           const mealProtein = Math.round(currentMealItems.reduce((acc, m) => acc + m.protein, 0) * 10) / 10;
+          const isExpanded = expandedMeals[meal.id] ?? true;
 
           return (
             <div
               key={meal.id}
-              className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-4 sm:p-5 shadow-sm transition-all hover:border-[#273547]"
+              className={`bg-[#10151C] border ${
+                isExpanded ? 'border-[#1E2734]' : 'border-[#18212D]'
+              } rounded-2xl p-4 sm:p-5 shadow-sm transition-all hover:border-[#273547]`}
             >
-              {/* Meal Header */}
-              <div className="flex items-center justify-between pb-3.5 border-b border-[#1A232E]">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#141D27] border border-[#223040] flex items-center justify-center text-lg shadow-sm">
+              {/* Accordion Header */}
+              <div
+                onClick={() => toggleMealAccordion(meal.id)}
+                className={`flex items-center justify-between cursor-pointer select-none transition-colors group ${
+                  isExpanded ? 'pb-3.5 border-b border-[#1A232E]' : 'py-0.5'
+                }`}
+                title={isExpanded ? 'Click to collapse meal' : 'Click to expand meal'}
+              >
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-[#141D27] border border-[#223040] flex items-center justify-center text-lg shadow-sm shrink-0 group-hover:scale-105 transition-transform">
                     <span>{meal.icon}</span>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-1.5">
-                      <span>{meal.title}</span>
-                    </h3>
-                    <p className="text-[11px] text-slate-400 font-mono">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-white tracking-tight truncate">
+                        {meal.title}
+                      </h3>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#182330] text-slate-300 border border-[#233144]">
+                        {currentMealItems.length === 0
+                          ? '0'
+                          : `${currentMealItems.length}`}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">
                       <span className="text-white font-bold">{mealCalories}</span> kcal ·{' '}
                       <span className="text-emerald-400 font-bold">{mealProtein}g</span> protein
                     </p>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleOpenAddFood(meal.id)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#141C25] hover:bg-[#1C2735] border border-[#233142] text-xs font-bold text-lime-400 rounded-lg transition-colors cursor-pointer shadow-sm active:scale-95"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Food</span>
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenAddFood(meal.id);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#141C25] hover:bg-[#1C2735] border border-[#233142] text-xs font-bold text-lime-400 rounded-lg transition-colors cursor-pointer shadow-sm active:scale-95"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>{t('nutrition.addFood', 'Add Food')}</span>
+                  </button>
+
+                  <div
+                    className={`p-1.5 rounded-lg bg-[#141D27] text-slate-400 group-hover:text-white transition-transform duration-200 ${
+                      isExpanded ? 'rotate-180 text-lime-400' : ''
+                    }`}
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
               </div>
 
-              {/* Items List */}
-              {currentMealItems.length === 0 ? (
-                <div className="py-5 text-center flex flex-col items-center justify-center gap-1.5">
-                  <div className="w-9 h-9 rounded-full bg-[#131A22] flex items-center justify-center text-base opacity-60">
-                    <span>{meal.icon}</span>
-                  </div>
-                  <p className="text-xs text-slate-500 font-medium">
-                    No foods logged for {meal.title.toLowerCase()} yet.
-                  </p>
-                </div>
-              ) : (
-                <div className="divide-y divide-[#161F2A] pt-1">
-                  {currentMealItems.map((entry) => {
-                    const visual = getFoodVisual(entry.foodName);
-                    return (
-                      <div
-                        key={entry.id}
-                        className="py-3 flex items-center justify-between gap-3 text-xs group hover:bg-[#131B24]/60 px-2 rounded-xl transition-all"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          {/* Dish Icon / Emoji Avatar */}
+              {/* Accordion Body: Items List */}
+              {isExpanded && (
+                <div className="mt-2 animate-in fade-in duration-150">
+                  {currentMealItems.length === 0 ? (
+                    <div className="py-5 text-center flex flex-col items-center justify-center gap-1.5">
+                      <div className="w-9 h-9 rounded-full bg-[#131A22] flex items-center justify-center text-base opacity-60">
+                        <span>{meal.icon}</span>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium">
+                        {t('nutrition.noFoodsLogged', 'No foods logged for this meal yet.')}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-[#161F2A] pt-1">
+                      {currentMealItems.map((entry) => {
+                        const visual = getFoodVisual(entry.foodName);
+                        const servingGrams = getEntryGrams(entry);
+                        return (
                           <div
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 border ${visual.bg} ${visual.border} shadow-sm transition-transform group-hover:scale-105`}
-                            title={entry.foodName}
+                            key={entry.id}
+                            className="py-3 flex items-center justify-between gap-3 text-xs group hover:bg-[#131B24]/60 px-2 rounded-xl transition-all"
                           >
-                            <span>{visual.emoji}</span>
-                          </div>
+                            <div className="flex items-center gap-3 min-w-0">
+                              {/* Dish Icon / Emoji Avatar */}
+                              <div
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 border ${visual.bg} ${visual.border} shadow-sm transition-transform group-hover:scale-105`}
+                                title={entry.foodName}
+                              >
+                                <span>{visual.emoji}</span>
+                              </div>
 
-                          {/* Food Name & Dynamic Macro Pills */}
-                          <div className="min-w-0 space-y-1">
-                            <p className="font-bold text-slate-100 text-xs sm:text-sm truncate">
-                              {entry.foodName}
-                            </p>
-                            <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
-                              <span className="text-slate-400">
-                                {entry.servings} serving{entry.servings > 1 ? 's' : ''}
-                              </span>
-                              <span className="text-slate-600">·</span>
-                              <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/25">
-                                {entry.protein}g P
-                              </span>
-                              <span className="px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 font-bold border border-sky-500/25">
-                                {entry.carbs}g C
-                              </span>
-                              <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 font-bold border border-amber-500/25">
-                                {entry.fat}g F
-                              </span>
+                              {/* Food Name & Dynamic Macro Pills with EXACT Serving Grams */}
+                              <div className="min-w-0 space-y-1">
+                                <p className="font-bold text-slate-100 text-xs sm:text-sm truncate">
+                                  {entry.foodName}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
+                                  <span className="text-slate-300 font-medium">
+                                    {entry.servings} {entry.servings > 1 ? t('nutrition.servings', 'servings') : t('nutrition.serving', 'serving')}{' '}
+                                    <span className="text-lime-400 font-bold">({servingGrams}g)</span>
+                                  </span>
+                                  <span className="text-slate-600">·</span>
+                                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/25">
+                                    {entry.protein}g P
+                                  </span>
+                                  <span className="px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 font-bold border border-sky-500/25">
+                                    {entry.carbs}g C
+                                  </span>
+                                  <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 font-bold border border-amber-500/25">
+                                    {entry.fat}g F
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Calories & Delete Action */}
+                            <div className="flex items-center gap-2.5 shrink-0">
+                              <div className="text-right">
+                                <p className="font-extrabold text-white font-mono text-sm">
+                                  {entry.calories}
+                                </p>
+                                <p className="text-[10px] text-slate-400 font-mono -mt-0.5">kcal</p>
+                              </div>
+                              <button
+                                onClick={() => onDeleteMealEntry(entry.id)}
+                                className="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 p-2 rounded-lg transition-colors cursor-pointer"
+                                title="Delete entry"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                           </div>
-                        </div>
-
-                        {/* Calories & Delete Action */}
-                        <div className="flex items-center gap-2.5 shrink-0">
-                          <div className="text-right">
-                            <p className="font-extrabold text-white font-mono text-sm">
-                              {entry.calories}
-                            </p>
-                            <p className="text-[10px] text-slate-400 font-mono -mt-0.5">kcal</p>
-                          </div>
-                          <button
-                            onClick={() => onDeleteMealEntry(entry.id)}
-                            className="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 p-2 rounded-lg transition-colors cursor-pointer"
-                            title="Delete entry"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

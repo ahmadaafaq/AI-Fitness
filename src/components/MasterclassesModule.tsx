@@ -10,6 +10,7 @@ import {
   Maximize2,
   Pause,
   CheckCircle2,
+  ArrowLeft,
 } from 'lucide-react';
 import { CheckoutItem } from './PaymentCheckoutModal';
 
@@ -222,24 +223,37 @@ export const MasterclassesModule: React.FC<MasterclassesModuleProps> = ({
     <div className="space-y-4 sm:space-y-6 pb-20">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-[#18212C] pb-3">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-lime-400">
-            <Video className="w-3.5 h-3.5" />
-            <span>YUKSAL Masterclass Series</span>
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <button
+            onClick={onClose}
+            id="classes-back-btn"
+            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#121922] hover:bg-[#18222F] border border-[#1E2734] hover:border-lime-400 text-slate-200 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer shrink-0 shadow-sm active:scale-95"
+            title="Back"
+            aria-label="Back"
+          >
+            <ArrowLeft className="w-4 h-4 text-lime-400" />
+            <span className="text-[11px] font-semibold">Back</span>
+          </button>
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-lime-400">
+              <Video className="w-3.5 h-3.5" />
+              <span>YUKSAL Masterclass Series</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white mt-0.5">
+              Coach Video Masterclasses
+            </h1>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Elite sports science & lifting mechanics by Head Coach Marcus Vance, CSCS
+            </p>
           </div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white mt-0.5">
-            Coach Video Masterclasses
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Elite sports science & lifting mechanics by Head Coach Marcus Vance, CSCS
-          </p>
         </div>
 
         <button
           onClick={onClose}
-          className="px-3 py-1.5 bg-[#141C25] hover:bg-[#1C2633] border border-[#222E3E] text-xs font-semibold text-slate-200 rounded-lg self-start sm:self-auto"
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#141C25] hover:bg-[#1C2633] border border-[#222E3E] text-xs font-semibold text-slate-200 rounded-lg cursor-pointer"
         >
-          Back to Dashboard
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Dashboard</span>
         </button>
       </div>
 

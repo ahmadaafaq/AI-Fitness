@@ -303,6 +303,26 @@ export default function App() {
     setCurrentTab(tab);
   };
 
+  const isSubViewActive = isAIOpen || isRecoveryOpen || isVisionOpen || isMasterclassesOpen || isSubscriptionOpen || isOnboardingOpen;
+  const canGoBack = currentTab !== 'home' || isSubViewActive;
+
+  const handleGlobalBack = () => {
+    if (isAIOpen) { setIsAIOpen(false); return; }
+    if (isRecoveryOpen) { setIsRecoveryOpen(false); return; }
+    if (isVisionOpen) { setIsVisionOpen(false); return; }
+    if (isMasterclassesOpen) {
+      setIsMasterclassesOpen(false);
+      if (currentTab === 'classes') handleSwitchTab('home');
+      return;
+    }
+    if (isSubscriptionOpen) { setIsSubscriptionOpen(false); return; }
+    if (isOnboardingOpen) { setIsOnboardingOpen(false); return; }
+    if (currentTab !== 'home') {
+      handleSwitchTab('home');
+      return;
+    }
+  };
+
   // Render main screen body
   const renderScreenBody = (isMobile: boolean = false) => {
     // SUB-VIEW: VIDEO MASTERCLASSES (Triggered or via tab)
@@ -341,6 +361,7 @@ export default function App() {
             todayMeals={mealEntries}
             chatHistory={chatHistory}
             isMobileMode={isMobile}
+            onClose={() => setIsAIOpen(false)}
             onSaveChatHistory={handleSaveChatHistory}
           />
         </div>
@@ -433,6 +454,7 @@ export default function App() {
           exercises={exercises}
           history={workoutHistory}
           isMobileMode={isMobile}
+          onBack={handleGlobalBack}
           onStartProgramDay={handleStartProgramDay}
           onStartEmptyWorkout={handleStartEmptyWorkout}
           onSaveProgram={handleSaveProgram}
@@ -449,6 +471,7 @@ export default function App() {
           mealEntries={mealEntries}
           foodDatabase={foodDatabase}
           isMobileMode={isMobile}
+          onBack={handleGlobalBack}
           onAddMealEntry={handleAddMealEntry}
           onDeleteMealEntry={handleDeleteMealEntry}
           onSaveCustomFood={handleSaveCustomFood}
@@ -464,6 +487,7 @@ export default function App() {
           weightLogs={weightLogs}
           workoutHistory={workoutHistory}
           isMobileMode={isMobile}
+          onBack={handleGlobalBack}
           onLogWeight={handleLogWeight}
         />
       );
@@ -475,6 +499,7 @@ export default function App() {
         <ProfileModule
           userProfile={userProfile}
           isMobileMode={isMobile}
+          onBack={handleGlobalBack}
           onUpdateProfile={handleUpdateProfile}
           onResetAllData={handleResetAllData}
           onOpenOnboarding={() => setIsOnboardingOpen(true)}
@@ -514,6 +539,8 @@ export default function App() {
               isMobileViewMode={isMobileViewMode}
               onToggleMobileView={() => setIsMobileViewMode(false)}
               isRealMobile={false}
+              canGoBack={canGoBack}
+              onNavigateBack={handleGlobalBack}
             />
 
             {/* Scrollable Interior Screen Body */}
@@ -556,6 +583,8 @@ export default function App() {
             isMobileViewMode={isMobileViewMode}
             onToggleMobileView={() => setIsMobileViewMode(true)}
             isRealMobile={isRealMobileDevice}
+            canGoBack={canGoBack}
+            onNavigateBack={handleGlobalBack}
           />
 
           <main className={`flex-1 w-full mx-auto ${isRealMobileDevice ? 'px-3 pt-2 max-w-lg' : 'max-w-6xl px-3 sm:px-4 pt-3 sm:pt-6'}`}>

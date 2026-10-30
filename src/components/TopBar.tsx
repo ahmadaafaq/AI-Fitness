@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Smartphone, Monitor } from 'lucide-react';
+import { Smartphone, ArrowLeft } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -9,6 +9,8 @@ interface TopBarProps {
   onToggleMobileView: () => void;
   userName?: string;
   isRealMobile?: boolean;
+  canGoBack?: boolean;
+  onNavigateBack?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -17,6 +19,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onToggleMobileView,
   userName = 'Alex',
   isRealMobile = false,
+  canGoBack = false,
+  onNavigateBack,
 }) => {
   const { t } = useLanguage();
   const initial = userName.charAt(0).toUpperCase();
@@ -24,8 +28,21 @@ export const TopBar: React.FC<TopBarProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-[#090D10]/95 backdrop-blur-xl border-b border-[#18212C] pt-safe select-none">
       <div className="max-w-6xl mx-auto px-3.5 sm:px-4 h-13 sm:h-14 flex items-center justify-between gap-2 overflow-x-hidden">
-        {/* Brand Zone */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Brand Zone + Visible Back Button */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {canGoBack && onNavigateBack && (
+            <button
+              onClick={onNavigateBack}
+              id="topbar-back-btn"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#141B22] hover:bg-[#1C2633] border border-[#232F3E] hover:border-lime-400 text-xs font-bold text-slate-200 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer mr-0.5"
+              title={t('common.back', 'Back')}
+              aria-label="Back"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-lime-400" />
+              <span className="text-[11px] font-semibold">{t('common.back', 'Back')}</span>
+            </button>
+          )}
+
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-lime-400 flex items-center justify-center text-slate-950 font-black text-sm sm:text-base tracking-tighter shadow-sm shadow-lime-500/20 shrink-0">
             Y
           </div>
