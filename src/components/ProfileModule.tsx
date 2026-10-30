@@ -19,8 +19,12 @@ import {
   Layers,
   Sparkles,
   ArrowLeft,
+  Sun,
+  Moon,
+  Palette,
 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useTheme } from '../theme/ThemeContext';
 
 interface ProfileModuleProps {
   userProfile: UserProfile;
@@ -40,6 +44,7 @@ export const ProfileModule: React.FC<ProfileModuleProps> = ({
   onOpenOnboarding,
 }) => {
   const { t } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [formData, setFormData] = useState<UserProfile>(userProfile);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
@@ -350,6 +355,47 @@ export const ProfileModule: React.FC<ProfileModuleProps> = ({
               {formData.macroTargets.fat}g
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* App Appearance & Theme Selection Card */}
+      <div className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-5 shadow-sm space-y-3">
+        <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+          <Palette className="w-4 h-4 text-lime-400" />
+          {t('theme.appearance', 'App Appearance & Theme')}
+        </h2>
+        <p className="text-xs text-slate-400">
+          Choose your preferred theme across the entire application.
+        </p>
+
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <button
+            type="button"
+            id="profile-theme-dark-btn"
+            onClick={() => setTheme('dark')}
+            className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+              theme === 'dark'
+                ? 'bg-[#182330] border-lime-400 text-lime-400 shadow-sm'
+                : 'bg-[#141B24] border-[#202C3B] text-slate-400 hover:text-white'
+            }`}
+          >
+            <Moon className="w-4 h-4 text-indigo-400" />
+            <span>{t('theme.dark', 'Dark Mode')}</span>
+          </button>
+
+          <button
+            type="button"
+            id="profile-theme-light-btn"
+            onClick={() => setTheme('light')}
+            className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+              theme === 'light'
+                ? 'bg-lime-500/10 border-lime-500 text-lime-600 font-bold shadow-sm'
+                : 'bg-[#141B24] border-[#202C3B] text-slate-400 hover:text-white'
+            }`}
+          >
+            <Sun className="w-4 h-4 text-amber-500" />
+            <span>{t('theme.light', 'Light Mode')}</span>
+          </button>
         </div>
       </div>
 

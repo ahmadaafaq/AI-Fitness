@@ -50,6 +50,28 @@ export const translations: Translations = {
     uz: "Mobil ko'rinish",
   },
 
+  // Theme
+  'theme.dark': {
+    en: 'Dark Mode',
+    uz: 'Tungi rejim',
+  },
+  'theme.light': {
+    en: 'Light Mode',
+    uz: 'Kunduzgi rejim',
+  },
+  'theme.toggleToLight': {
+    en: 'Switch to Light Mode',
+    uz: "Kunduzgi rejimga o'tish",
+  },
+  'theme.toggleToDark': {
+    en: 'Switch to Dark Mode',
+    uz: "Tungi rejimga o'tish",
+  },
+  'theme.appearance': {
+    en: 'App Appearance',
+    uz: "Ilova ko'rinishi",
+  },
+
   // AI Coach Floating Button
   'coach.floating': {
     en: 'AI COACH',

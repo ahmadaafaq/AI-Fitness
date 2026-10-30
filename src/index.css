@@ -342,3 +342,263 @@
   }
 }
 
+/* ==========================================================================
+   LIGHT MODE DESIGN SYSTEM
+   Apple Fitness+ / Nike Training Club inspired clean aesthetic:
+   - Primary Surface: #FFFFFF
+   - Page Canvas: #F8FAFC
+   - Elevated Canvas / Subcards: #F1F5F9
+   - Border lines: #E2E8F0
+   - Primary text: #0F172A
+   - Secondary text: #334155
+   - Muted text: #64748B
+   - Sporty Lime & Emerald accents preserved with high contrast
+   ========================================================================== */
+
+html.light,
+html.light body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+/* Base canvases and deep shell wrappers */
+html.light .bg-\[\#05070A\],
+html.light .bg-\[\#080B0E\],
+html.light .bg-\[\#090D10\],
+html.light .bg-\[\#090D11\],
+html.light .bg-\[\#0A0D12\],
+html.light .bg-\[\#0A0E13\],
+html.light .bg-\[\#0B0F13\] {
+  background-color: #F8FAFC !important;
+}
+
+/* Primary cards, containers, panels, modals */
+html.light .bg-\[\#0D1217\],
+html.light .bg-\[\#0F151D\],
+html.light .bg-\[\#0F161E\],
+html.light .bg-\[\#10151C\],
+html.light .bg-\[\#10161D\],
+html.light .bg-\[\#10161F\],
+html.light .bg-\[\#101720\],
+html.light .bg-\[\#121821\],
+html.light .bg-\[\#121922\],
+html.light .bg-\[\#121A20\],
+html.light .bg-\[\#121A22\],
+html.light .bg-\[\#121A23\],
+html.light .bg-\[\#131A22\],
+html.light .bg-\[\#131B24\],
+html.light .bg-\[\#141B22\],
+html.light .bg-\[\#141B23\],
+html.light .bg-\[\#141B24\],
+html.light .bg-\[\#141C25\],
+html.light .bg-\[\#141C26\],
+html.light .bg-\[\#141D27\],
+html.light .bg-\[\#141E28\],
+html.light .bg-\[\#141E29\],
+html.light .bg-\[\#141E2A\],
+html.light .bg-\[\#151D26\],
+html.light .bg-\[\#151D27\],
+html.light .bg-\[\#151D28\],
+html.light .bg-\[\#161F29\],
+html.light .bg-\[\#161F2A\],
+html.light .bg-\[\#16202A\],
+html.light .bg-\[\#16202B\],
+html.light .bg-\[\#16202C\],
+html.light .bg-\[\#16212D\],
+html.light .bg-\[\#17212C\],
+html.light .bg-\[\#17222F\],
+html.light .bg-\[\#18202A\],
+html.light .bg-\[\#18222D\],
+html.light .bg-\[\#18222F\],
+html.light .bg-\[\#18232E\],
+html.light .bg-\[\#182330\] {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Secondary / Elevated rows, pill tags, hover states */
+html.light .bg-\[\#1A232E\],
+html.light .bg-\[\#1A2533\],
+html.light .bg-\[\#1C2533\],
+html.light .bg-\[\#1C2633\],
+html.light .bg-\[\#1C2735\],
+html.light .bg-\[\#1E2B3A\],
+html.light .bg-\[\#1E2B3B\],
+html.light .bg-\[\#1F2937\],
+html.light .bg-\[\#1F2C3C\],
+html.light .bg-\[\#253243\] {
+  background-color: #F1F5F9 !important;
+}
+
+/* Semi-translucent bars and fixed navigations */
+html.light header,
+html.light header.bg-\[\#090D10\]\/95,
+html.light .bg-\[\#090D10\]\/95,
+html.light .bg-\[\#090D10\]\/90 {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-bottom-color: #E2E8F0 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+html.light nav,
+html.light nav.bg-\[\#090D10\]\/95,
+html.light nav.bg-\[\#090D10\] {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-top-color: #E2E8F0 !important;
+  box-shadow: 0 -2px 10px 0 rgba(0, 0, 0, 0.03);
+}
+
+/* Dark mode border utilities mapped to crisp light slate */
+html.light [class*="border-\[#"] {
+  border-color: #E2E8F0 !important;
+}
+
+/* Text Hierarchy in Light Mode */
+html.light .text-white {
+  color: #0F172A !important;
+}
+html.light .text-slate-100 {
+  color: #0F172A !important;
+}
+html.light .text-slate-200 {
+  color: #1E293B !important;
+}
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+html.light .text-slate-400 {
+  color: #64748B !important;
+}
+html.light .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+/* Solid accent buttons maintain their punchy text */
+html.light .bg-lime-400,
+html.light .bg-lime-500 {
+  color: #0F172A !important;
+}
+html.light button.bg-lime-400 *,
+html.light button.bg-lime-500 * {
+  color: #0F172A !important;
+}
+
+html.light .bg-emerald-500,
+html.light .bg-emerald-600,
+html.light .bg-blue-600,
+html.light .bg-indigo-600,
+html.light .bg-red-500,
+html.light .bg-red-600,
+html.light .bg-amber-500 {
+  color: #FFFFFF !important;
+}
+html.light .bg-emerald-500 *,
+html.light .bg-emerald-600 *,
+html.light .bg-blue-600 *,
+html.light .bg-indigo-600 *,
+html.light .bg-red-500 *,
+html.light .bg-red-600 * {
+  color: #FFFFFF !important;
+}
+
+/* High contrast accents on light background */
+html.light .text-lime-400,
+html.light .text-lime-300 {
+  color: #4D7C0F !important;
+}
+
+html.light .text-emerald-400 {
+  color: #047857 !important;
+}
+html.light .text-sky-400 {
+  color: #0369A1 !important;
+}
+html.light .text-amber-400 {
+  color: #B45309 !important;
+}
+
+/* Form inputs & controls */
+html.light input:not([type="checkbox"]):not([type="radio"]),
+html.light select,
+html.light textarea {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Light mode styling for special accent banners with dark gradients */
+html.light .from-\[\#0b1715\],
+html.light .from-\[\#0F1C18\],
+html.light .from-\[\#061a14\] {
+  background-image: linear-gradient(to bottom right, #ECFDF5, #F0FDF4, #F7FEE7) !important;
+  border-color: #6EE7B7 !important;
+  box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.12) !important;
+}
+
+html.light .from-\[\#0b1715\] h2,
+html.light .from-\[\#0b1715\] h2 span {
+  color: #064E3B !important;
+}
+
+html.light .from-\[\#0b1715\] p,
+html.light .from-\[\#0b1715\] p span {
+  color: #047857 !important;
+}
+
+html.light .from-\[\#0b1715\] .bg-emerald-500\/15 {
+  background-color: #D1FAE5 !important;
+  color: #065F46 !important;
+  border-color: #6EE7B7 !important;
+}
+
+html.light .from-\[\#0b1715\] .bg-emerald-400\/10 {
+  background-color: #ECFDF5 !important;
+  color: #047857 !important;
+  border-color: #A7F3D0 !important;
+}
+
+/* Scrollbars in Light Mode */
+html.light ::-webkit-scrollbar-track {
+  background: #F1F5F9 !important;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: #CBD5E1 !important;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8 !important;
+}
+
+/* Mobile Frame inside Simulated Desktop Preview */
+html.light .mobile-app-mode {
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Markdown AI Coach Content in Light Mode */
+html.light .markdown-content h1,
+html.light .markdown-content h2,
+html.light .markdown-content h3 {
+  color: #3F6212 !important;
+}
+html.light .markdown-content h4 {
+  color: #0F172A !important;
+}
+html.light .markdown-content strong,
+html.light .markdown-content b {
+  color: #0F172A !important;
+}
+html.light .markdown-content li,
+html.light .markdown-content p {
+  color: #334155 !important;
+}
+html.light .markdown-content code {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  color: #3F6212 !important;
+}
+
+

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Smartphone, ArrowLeft } from 'lucide-react';
+import { Smartphone, ArrowLeft, Sun, Moon } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useTheme } from '../theme/ThemeContext';
 
 interface TopBarProps {
   onOpenProfile: () => void;
@@ -23,6 +24,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onNavigateBack,
 }) => {
   const { t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const initial = userName.charAt(0).toUpperCase();
 
   return (
@@ -51,9 +53,24 @@ export const TopBar: React.FC<TopBarProps> = ({
           </span>
         </div>
 
-        {/* Right Zone: Language Switcher, Profile Avatar and optional desktop-only mobile frame preview */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Right Zone: Language Switcher, Theme Toggle, Profile Avatar and optional desktop-only mobile frame preview */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <LanguageSelector />
+
+          {/* Theme Toggle Button (Dark / Light) */}
+          <button
+            onClick={toggleTheme}
+            id="theme-toggle-btn"
+            className="flex items-center justify-center w-8 h-8 rounded-xl bg-[#141B22] border border-[#232F3E] hover:border-lime-400/50 text-slate-300 hover:text-lime-400 transition-all active:scale-95 cursor-pointer shadow-sm"
+            title={theme === 'dark' ? t('theme.toggleToLight', 'Switch to Light Mode') : t('theme.toggleToDark', 'Switch to Dark Mode')}
+            aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400 animate-in fade-in" />
+            ) : (
+              <Moon className="w-4 h-4 text-indigo-400 animate-in fade-in" />
+            )}
+          </button>
 
           {!isRealMobile && !isMobileViewMode && (
             <button
