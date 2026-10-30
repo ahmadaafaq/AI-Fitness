@@ -34,6 +34,7 @@ import confetti from 'canvas-confetti';
 import { InteractiveMuscleMap } from './InteractiveMuscleMap';
 import { ExerciseAnimation } from './ExerciseAnimation';
 import { useLanguage } from '../i18n/LanguageContext';
+import { calculateProgramPrescribedLoad } from '../services/loadPreparation';
 
 interface WorkoutModuleProps {
   userProfile?: UserProfile;
@@ -551,27 +552,13 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
     <div className="space-y-6 pb-20">
       {/* Top Header & Fast Start */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#18212C] pb-4">
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          {onBack && (
-            <button
-              onClick={onBack}
-              id="workout-back-btn"
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#121922] hover:bg-[#18222F] border border-[#1E2734] hover:border-lime-400 text-slate-200 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer shrink-0 shadow-sm active:scale-95"
-              title={t('common.back', 'Back')}
-              aria-label="Back to previous screen"
-            >
-              <ArrowLeft className="w-4 h-4 text-lime-400" />
-              <span className="text-[11px] font-semibold">{t('common.back', 'Back')}</span>
-            </button>
-          )}
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              {t('workout.title')}
-            </h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {t('workout.subtitle')}
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            {t('workout.title')}
+          </h1>
+          <p className="text-xs text-slate-400 mt-0.5">
+            {t('workout.subtitle')}
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -776,11 +763,21 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
                               {day.exercises.map((pEx, pIdx) => {
                                 const exData = exercises.find((e) => e.id === pEx.exerciseId);
                                 if (!exData) return null;
+                                const load = calculateProgramPrescribedLoad(
+                                  exData.name,
+                                  exData,
+                                  1,
+                                  pEx.targetSets,
+                                  pEx.targetReps,
+                                  pEx.targetRpe || 8.0,
+                                  userProfile
+                                );
+
                                 return (
                                   <div
                                     key={pIdx}
                                     onClick={() => setSelectedExerciseModal(exData)}
-                                    className="w-20 shrink-0 bg-[#0F151D] hover:bg-[#16202B] rounded-xl p-1.5 border border-[#212E3D] hover:border-lime-500/50 cursor-pointer group transition-all"
+                                    className="w-22 shrink-0 bg-[#0F151D] hover:bg-[#16202B] rounded-xl p-1.5 border border-[#212E3D] hover:border-lime-500/50 cursor-pointer group transition-all"
                                     title={`Click to view ${exData.name} form animation`}
                                   >
                                     <div className="w-full h-12 rounded-lg bg-black/60 overflow-hidden mb-1 flex items-center justify-center">
@@ -791,6 +788,9 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
                                     </p>
                                     <p className="text-[9px] text-slate-400 font-mono">
                                       {pEx.targetSets} × {pEx.targetReps}
+                                    </p>
+                                    <p className="text-[9px] text-lime-400 font-mono font-bold">
+                                      Load: {load.targetWeightKg}kg
                                     </p>
                                   </div>
                                 );

@@ -144,18 +144,6 @@ export const AICoachModule: React.FC<AICoachModuleProps> = ({
       {/* Sleek, Compact AI Sports Scientist Banner (Smaller height) */}
       <div className="bg-[#10151C] border border-[#1E2734] rounded-xl px-3 py-2 shadow-sm shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {onClose && (
-            <button
-              onClick={onClose}
-              id="coach-back-btn"
-              className="p-1 px-2 rounded-lg bg-[#141D27] hover:bg-[#1A2533] border border-[#223040] hover:border-lime-400 text-slate-200 text-xs font-bold transition-all flex items-center gap-1 active:scale-95 cursor-pointer mr-1"
-              title={t('common.back', 'Back')}
-              aria-label="Back"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 text-lime-400" />
-              <span className="text-[11px] font-semibold">{t('common.back', 'Back')}</span>
-            </button>
-          )}
           <div className="p-1 rounded-lg bg-lime-500/10 text-lime-400">
             <Sparkles className="w-3.5 h-3.5" />
           </div>

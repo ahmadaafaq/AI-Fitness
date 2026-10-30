@@ -8,6 +8,7 @@ import {
   WorkoutSet,
 } from '../types';
 import { calculateOneRM, evaluateAutoregulation, rpeToRir } from '../services/autoregulation';
+import { calculateProgramPrescribedLoad } from '../services/loadPreparation';
 import {
   Clock,
   Dumbbell,
@@ -24,6 +25,7 @@ import {
   Trophy,
   X,
   ArrowRight,
+  Sliders,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ExerciseAnimation } from './ExerciseAnimation';
@@ -537,176 +539,174 @@ export const LiveWorkoutTracker: React.FC<LiveWorkoutTrackerProps> = ({
                 </div>
               </div>
 
-              {/* Sets Table */}
-              <div className="overflow-x-auto -mx-1 sm:mx-0">
-                <table className="w-full min-w-[480px] text-left text-xs">
-                  <thead>
-                    <tr className="text-slate-400 border-b border-[#1A232E] pb-1">
-                      <th className="py-2 px-1 w-12 text-center">Set</th>
-                      <th className="py-2 px-2 w-24">Type</th>
-                      <th className="py-2 px-2">Weight (kg)</th>
-                      <th className="py-2 px-2">Reps</th>
-                      <th className="py-2 px-2">RPE / RIR</th>
-                      <th className="py-2 px-2 text-center w-14">Done</th>
-                      <th className="py-2 px-1 w-8"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#161F2A]">
-                    {ex.sets.map((set, setIdx) => {
-                      const est1RM = calculateOneRM(set.actualWeightKg, set.actualReps, formula);
+              {/* Sets Interactive Sliders List - No buttons, only smooth sliders! */}
+              <div className="space-y-3 mt-3">
+                {ex.sets.map((set, setIdx) => {
+                  const prescribed = calculateProgramPrescribedLoad(
+                    ex.exerciseName,
+                    exerciseDef,
+                    setIdx,
+                    ex.sets.length,
+                    set.targetReps,
+                    set.rpe || 8.0
+                  );
 
-                      return (
-                        <tr
-                          key={set.id}
-                          className={`transition-colors ${
-                            set.completed ? 'bg-lime-500/[0.04]' : 'hover:bg-[#141B23]'
-                          }`}
-                        >
-                          {/* Set Number */}
-                          <td className="py-2.5 px-1 text-center font-mono font-bold text-slate-300">
+                  const maxWeight = Math.max(prescribed.maxSliderWeightKg, set.actualWeightKg * 1.4, 60);
+                  const step = prescribed.weightStep;
+
+                  return (
+                    <div
+                      key={set.id}
+                      className={`rounded-2xl border p-3.5 transition-all ${
+                        set.completed
+                          ? 'bg-lime-500/[0.06] border-lime-500/50 shadow-sm'
+                          : 'bg-[#141B24] border-[#202B3A] hover:border-[#2C3B4E]'
+                      }`}
+                    >
+                      {/* Set Card Top Header: Set Number, Program Prescribed Load badge, Slide to Complete Toggle */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1E2938] pb-2.5 mb-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="w-6 h-6 rounded-lg bg-[#1E2A38] text-white font-mono font-bold text-xs flex items-center justify-center">
                             {set.setNumber}
-                          </td>
+                          </span>
+                          <select
+                            value={set.setType}
+                            onChange={(e) =>
+                              handleUpdateSet(exIdx, setIdx, { setType: e.target.value as SetType })
+                            }
+                            className="bg-[#18222D] border border-[#273547] rounded-md px-2 py-0.5 text-[11px] font-semibold text-slate-300"
+                          >
+                            <option value="warmup">Warm-up</option>
+                            <option value="working">Working</option>
+                            <option value="failure">Failure</option>
+                          </select>
 
-                          {/* Set Type */}
-                          <td className="py-2.5 px-2">
-                            <select
-                              value={set.setType}
-                              onChange={(e) =>
-                                handleUpdateSet(exIdx, setIdx, { setType: e.target.value as SetType })
-                              }
-                              className="bg-[#151D27] border border-[#232F3E] rounded px-1.5 py-1 text-[11px] text-slate-300 font-medium"
-                            >
-                              <option value="warmup">Warm-up</option>
-                              <option value="working">Working</option>
-                              <option value="failure">Failure</option>
-                            </select>
-                          </td>
+                          {/* Prepared by Program Load Badge */}
+                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-lime-400/10 text-lime-400 border border-lime-400/30 text-[10px] font-mono font-bold">
+                            <span>🎯 Prescribed: {set.targetWeightKg} kg × {set.targetReps} reps</span>
+                          </div>
+                        </div>
 
-                          {/* Weight Steppers */}
-                          <td className="py-2.5 px-2">
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() =>
-                                  handleUpdateSet(exIdx, setIdx, {
-                                    actualWeightKg: Math.max(0, set.actualWeightKg - 2.5),
-                                  })
-                                }
-                                className="w-6 h-6 rounded bg-[#17212C] text-slate-400 hover:text-white flex items-center justify-center text-xs font-bold font-mono"
-                              >
-                                -
-                              </button>
+                        <div className="flex items-center gap-3">
+                          {/* Slide-to-Complete Switch Slider */}
+                          <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <span className="text-[11px] font-bold text-slate-300 hidden sm:inline">
+                              {set.completed ? '✓ Completed' : 'Slide to Complete'}
+                            </span>
+                            <div className="relative">
                               <input
-                                type="number"
-                                step="0.5"
-                                value={set.actualWeightKg}
-                                onChange={(e) =>
-                                  handleUpdateSet(exIdx, setIdx, {
-                                    actualWeightKg: Number(e.target.value),
-                                  })
-                                }
-                                className="w-14 bg-[#151D27] border border-[#232F3E] rounded px-1.5 py-1 text-center text-xs font-bold text-white font-mono tabular-nums focus:outline-none focus:border-lime-400"
+                                type="checkbox"
+                                checked={set.completed}
+                                onChange={() => handleToggleCompleteSet(exIdx, setIdx)}
+                                className="sr-only peer"
                               />
-                              <button
-                                onClick={() =>
-                                  handleUpdateSet(exIdx, setIdx, {
-                                    actualWeightKg: set.actualWeightKg + 2.5,
-                                  })
-                                }
-                                className="w-6 h-6 rounded bg-[#17212C] text-slate-400 hover:text-white flex items-center justify-center text-xs font-bold font-mono"
-                              >
-                                +
-                              </button>
+                              <div className="w-12 h-6 bg-[#1A2533] peer-focus:outline-none rounded-full peer peer-checked:bg-lime-400 transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6 peer-checked:after:bg-slate-950 shadow-inner"></div>
                             </div>
-                          </td>
+                          </label>
 
-                          {/* Reps Steppers */}
-                          <td className="py-2.5 px-2">
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() =>
-                                  handleUpdateSet(exIdx, setIdx, {
-                                    actualReps: Math.max(1, set.actualReps - 1),
-                                  })
-                                }
-                                className="w-6 h-6 rounded bg-[#17212C] text-slate-400 hover:text-white flex items-center justify-center text-xs font-bold font-mono"
-                              >
-                                -
-                              </button>
-                              <input
-                                type="number"
-                                value={set.actualReps}
-                                onChange={(e) =>
-                                  handleUpdateSet(exIdx, setIdx, {
-                                    actualReps: Number(e.target.value),
-                                  })
-                                }
-                                className="w-12 bg-[#151D27] border border-[#232F3E] rounded px-1.5 py-1 text-center text-xs font-bold text-white font-mono tabular-nums focus:outline-none focus:border-lime-400"
-                              />
-                              <button
-                                onClick={() =>
-                                  handleUpdateSet(exIdx, setIdx, {
-                                    actualReps: set.actualReps + 1,
-                                  })
-                                }
-                                className="w-6 h-6 rounded bg-[#17212C] text-slate-400 hover:text-white flex items-center justify-center text-xs font-bold font-mono"
-                              >
-                                +
-                              </button>
-                            </div>
-                          </td>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSet(exIdx, setIdx)}
+                            className="text-slate-500 hover:text-red-400 p-1"
+                            title="Delete Set"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
 
-                          {/* RPE & RIR */}
-                          <td className="py-2.5 px-2">
-                            <div className="flex items-center gap-1.5">
-                              <select
-                                value={set.rpe}
-                                onChange={(e) =>
-                                  handleUpdateSet(exIdx, setIdx, { rpe: Number(e.target.value) })
-                                }
-                                className="bg-[#151D27] border border-[#232F3E] rounded px-1.5 py-1 text-xs text-lime-400 font-bold font-mono"
-                              >
-                                <option value={6.0}>RPE 6 (4 RIR)</option>
-                                <option value={6.5}>RPE 6.5</option>
-                                <option value={7.0}>RPE 7 (3 RIR)</option>
-                                <option value={7.5}>RPE 7.5</option>
-                                <option value={8.0}>RPE 8 (2 RIR)</option>
-                                <option value={8.5}>RPE 8.5</option>
-                                <option value={9.0}>RPE 9 (1 RIR)</option>
-                                <option value={9.5}>RPE 9.5</option>
-                                <option value={10.0}>RPE 10 (0 RIR)</option>
-                              </select>
-                            </div>
-                          </td>
+                      {/* SLIDERS GRID: Weight Slider & Reps Slider & Effort Slider */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        {/* 1. Weight Load Slider */}
+                        <div className="bg-[#0F161F] p-3 rounded-xl border border-[#1A2430]">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                              <Sliders className="w-3 h-3 text-lime-400" />
+                              <span>Weight (Load)</span>
+                            </span>
+                            <span className="text-base font-black text-lime-400 font-mono">
+                              {set.actualWeightKg} <span className="text-[11px] text-slate-400 font-normal">kg</span>
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max={maxWeight}
+                            step={step}
+                            value={set.actualWeightKg}
+                            onChange={(e) =>
+                              handleUpdateSet(exIdx, setIdx, { actualWeightKg: parseFloat(e.target.value) })
+                            }
+                            className="w-full accent-lime-400 h-2.5 bg-[#1C2735] rounded-lg cursor-pointer"
+                          />
+                          <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+                            <span>0 kg</span>
+                            <span className="text-lime-400 font-bold">Program Target: {set.targetWeightKg} kg</span>
+                            <span>{maxWeight} kg</span>
+                          </div>
+                        </div>
 
-                          {/* 1-Tap Complete Checkbox */}
-                          <td className="py-2.5 px-2 text-center">
-                            <button
-                              onClick={() => handleToggleCompleteSet(exIdx, setIdx)}
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                                set.completed
-                                  ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-500/20'
-                                  : 'bg-[#18222D] text-slate-500 hover:text-slate-300 border border-[#243345]'
-                              }`}
-                            >
-                              <Check className="w-4 h-4 stroke-[3]" />
-                            </button>
-                          </td>
+                        {/* 2. Reps Target Slider */}
+                        <div className="bg-[#0F161F] p-3 rounded-xl border border-[#1A2430]">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                              <Sliders className="w-3 h-3 text-white" />
+                              <span>Reps (Target)</span>
+                            </span>
+                            <span className="text-base font-black text-white font-mono">
+                              {set.actualReps} <span className="text-[11px] text-slate-400 font-normal">reps</span>
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min="1"
+                            max="30"
+                            step="1"
+                            value={set.actualReps}
+                            onChange={(e) =>
+                              handleUpdateSet(exIdx, setIdx, { actualReps: parseInt(e.target.value) })
+                            }
+                            className="w-full accent-lime-400 h-2.5 bg-[#1C2735] rounded-lg cursor-pointer"
+                          />
+                          <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+                            <span>1 rep</span>
+                            <span className="text-white font-bold">Program Target: {set.targetReps} reps</span>
+                            <span>30 reps</span>
+                          </div>
+                        </div>
 
-                          {/* Delete Set */}
-                          <td className="py-2.5 px-1 text-center">
-                            <button
-                              onClick={() => handleRemoveSet(exIdx, setIdx)}
-                              className="text-slate-600 hover:text-red-400 p-1"
-                              title="Delete set"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                        {/* 3. Intensity & RIR Slider */}
+                        <div className="md:col-span-2 bg-[#0F161F] p-3 rounded-xl border border-[#1A2430]">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                              <Sliders className="w-3 h-3 text-sky-400" />
+                              <span>Autoregulated Intensity (RPE & RIR)</span>
+                            </span>
+                            <span className="text-xs font-bold text-sky-400 font-mono">
+                              RPE {set.rpe} · {rpeToRir(set.rpe)} RIR (Reps in Reserve)
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min="6.0"
+                            max="10.0"
+                            step="0.5"
+                            value={set.rpe}
+                            onChange={(e) =>
+                              handleUpdateSet(exIdx, setIdx, { rpe: parseFloat(e.target.value) })
+                            }
+                            className="w-full accent-sky-400 h-2 bg-[#1C2735] rounded-lg cursor-pointer"
+                          />
+                          <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+                            <span>RPE 6 (Warmup)</span>
+                            <span className="text-sky-400 font-bold">RPE 8 (Hypertrophy Sweet Spot)</span>
+                            <span className="text-rose-400">RPE 10 (Max Failure)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );

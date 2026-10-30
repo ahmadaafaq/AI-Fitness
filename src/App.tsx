@@ -31,6 +31,7 @@ import { FormAnalysisModule } from './components/FormAnalysisModule';
 import { ProfileModule } from './components/ProfileModule';
 import { MasterclassesModule } from './components/MasterclassesModule';
 import { CheckoutItem, PaymentCheckoutModal } from './components/PaymentCheckoutModal';
+import { calculateProgramPrescribedLoad } from './services/loadPreparation';
 import { Smartphone, Monitor, Sparkles } from 'lucide-react';
 
 export default function App() {
@@ -107,22 +108,36 @@ export default function App() {
 
     const mappedExercises = day.exercises.map((pEx, idx) => {
       const exMeta = exercises.find((e) => e.id === pEx.exerciseId);
-      const sets = Array.from({ length: pEx.targetSets }, (_, sIdx) => ({
-        id: `set_${Date.now()}_${idx}_${sIdx}`,
-        setNumber: sIdx + 1,
-        setType: (sIdx === 0 ? 'warmup' : 'working') as any,
-        targetReps: parseInt(pEx.targetReps) || 8,
-        targetWeightKg: sIdx === 0 ? 40 : 80,
-        actualReps: parseInt(pEx.targetReps) || 8,
-        actualWeightKg: sIdx === 0 ? 40 : 80,
-        rpe: pEx.targetRpe || 8.0,
-        rir: 2,
-        completed: false,
-      }));
+      const exName = exMeta?.name || 'Compound Movement';
+
+      const sets = Array.from({ length: pEx.targetSets }, (_, sIdx) => {
+        const load = calculateProgramPrescribedLoad(
+          exName,
+          exMeta,
+          sIdx,
+          pEx.targetSets,
+          pEx.targetReps,
+          pEx.targetRpe || 8.0,
+          userProfile
+        );
+
+        return {
+          id: `set_${Date.now()}_${idx}_${sIdx}`,
+          setNumber: sIdx + 1,
+          setType: (sIdx === 0 && pEx.targetSets > 1 ? 'warmup' : 'working') as any,
+          targetReps: load.targetReps,
+          targetWeightKg: load.targetWeightKg,
+          actualReps: load.targetReps,
+          actualWeightKg: load.targetWeightKg,
+          rpe: load.targetRpe,
+          rir: 2,
+          completed: false,
+        };
+      });
 
       return {
         exerciseId: pEx.exerciseId,
-        exerciseName: exMeta?.name || 'Compound Movement',
+        exerciseName: exName,
         primaryMuscle: exMeta?.primaryMuscle || ('Chest' as any),
         sets,
       };
@@ -148,6 +163,9 @@ export default function App() {
 
   const handleStartEmptyWorkout = () => {
     const defaultEx = exercises[0];
+    const loadWarmup = calculateProgramPrescribedLoad(defaultEx.name, defaultEx, 0, 3, 10, 6.0, userProfile);
+    const loadWorking = calculateProgramPrescribedLoad(defaultEx.name, defaultEx, 1, 3, 8, 8.0, userProfile);
+
     const newSession: WorkoutSession = {
       id: 'session_' + Date.now(),
       dayTitle: 'Quick Strength Session',
@@ -163,10 +181,10 @@ export default function App() {
               id: 'set_' + Date.now() + '_1',
               setNumber: 1,
               setType: 'warmup',
-              targetReps: 10,
-              targetWeightKg: 40,
-              actualReps: 10,
-              actualWeightKg: 40,
+              targetReps: loadWarmup.targetReps,
+              targetWeightKg: loadWarmup.targetWeightKg,
+              actualReps: loadWarmup.targetReps,
+              actualWeightKg: loadWarmup.targetWeightKg,
               rpe: 6.0,
               rir: 4,
               completed: false,
@@ -175,10 +193,10 @@ export default function App() {
               id: 'set_' + Date.now() + '_2',
               setNumber: 2,
               setType: 'working',
-              targetReps: 8,
-              targetWeightKg: 80,
-              actualReps: 8,
-              actualWeightKg: 80,
+              targetReps: loadWorking.targetReps,
+              targetWeightKg: loadWorking.targetWeightKg,
+              actualReps: loadWorking.targetReps,
+              actualWeightKg: loadWorking.targetWeightKg,
               rpe: 8.0,
               rir: 2,
               completed: false,
@@ -188,7 +206,7 @@ export default function App() {
       ],
       totalVolumeKg: 0,
       totalReps: 0,
-      totalSets: 0,
+      totalSets: 2,
       prCount: 0,
     };
 
