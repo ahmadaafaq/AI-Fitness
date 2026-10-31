@@ -430,7 +430,11 @@ html.light [class*="bg-[#202B3A]"] {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
 }
 
-/* Secondary / Elevated rows, pill tags, slider containers, inner wells */
+/* Secondary / Elevated rows, pill tags, badge pills, slider containers, inner wells */
+html.light .bg-\[\#0E1319\],
+html.light [class*="bg-[#0E1319]"],
+html.light .bg-\[\#090D11\],
+html.light [class*="bg-[#090D11]"],
 html.light .bg-\[\#0F161F\],
 html.light [class*="bg-[#0F161F]"],
 html.light .bg-\[\#1A232E\],
@@ -448,8 +452,9 @@ html.light .bg-\[\#253243\],
 html.light [class*="bg-[#1A2533]"],
 html.light [class*="bg-[#1C2735]"],
 html.light [class*="bg-[#1E2A38]"] {
-  background-color: #F8FAFC !important;
-  border-color: #E2E8F0 !important;
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  color: #334155 !important;
 }
 
 /* Semi-translucent bars and fixed navigations */
@@ -497,7 +502,13 @@ html.light .text-slate-400 {
   color: #64748B !important;
 }
 html.light .text-slate-500 {
-  color: #94A3B8 !important;
+  color: #64748B !important;
+}
+html.light .text-slate-600 {
+  color: #475569 !important;
+}
+html.light .text-slate-700 {
+  color: #334155 !important;
 }
 
 /* Solid accent buttons maintain their punchy text */
