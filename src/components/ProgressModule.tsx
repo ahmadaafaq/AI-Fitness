@@ -36,7 +36,8 @@ export const ProgressModule: React.FC<ProgressModuleProps> = ({
   const { t } = useLanguage();
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '6m' | '1y'>('30d');
   const [selectedCoreLift, setSelectedCoreLift] = useState<'bench' | 'squat' | 'deadlift'>('bench');
-  const [formula, setFormula] = useState<'epley' | 'brzycki'>(userProfile.calculationFormula || 'epley');
+  // Formula is controlled from Profile > Training & Engine Settings
+  const formula = userProfile.calculationFormula || 'epley';
 
   // Manual weight entry modal
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
@@ -221,60 +222,74 @@ export const ProgressModule: React.FC<ProgressModuleProps> = ({
           </div>
         </div>
 
-        {/* SVG Curve Canvas */}
-        <div className="w-full bg-[#0D1217] rounded-xl p-3 border border-[#18222D]">
-          <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-44 overflow-visible">
-            {/* Horizontal Grid lines */}
-            <line x1="0" y1={getY(targetWeight)} x2={chartWidth} y2={getY(targetWeight)} stroke="#22C55E" strokeDasharray="4 4" strokeWidth="1" opacity="0.6" />
-            <text x={chartWidth - 75} y={getY(targetWeight) - 5} fill="#22C55E" fontSize="9" fontFamily="monospace">
-              Target ({targetWeight}kg)
-            </text>
+        {/* SVG Curve Canvas OR Empty State */}
+        {filteredLogs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <div className="text-5xl mb-3">⚖️</div>
+            <p className="text-sm font-bold text-white">No weight logs yet</p>
+            <p className="text-xs text-slate-400 mt-1">Log your first weigh-in to see your trajectory here.</p>
+            <button
+              onClick={() => setIsWeightModalOpen(true)}
+              className="mt-4 px-4 py-2 bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold text-xs rounded-xl"
+            >
+              Log Weight Now
+            </button>
+          </div>
+        ) : (
+          <div className="w-full bg-[#0D1217] rounded-xl p-3 border border-[#18222D]">
+            <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-44 overflow-visible">
+              {/* Horizontal Grid lines */}
+              <line x1="0" y1={getY(targetWeight)} x2={chartWidth} y2={getY(targetWeight)} stroke="#22C55E" strokeDasharray="4 4" strokeWidth="1" opacity="0.6" />
+              <text x={chartWidth - 75} y={getY(targetWeight) - 5} fill="#22C55E" fontSize="9" fontFamily="monospace">
+                Target ({targetWeight}kg)
+              </text>
 
-            {/* Weight Line */}
-            {filteredLogs.length > 1 && (
-              <polyline
-                fill="none"
-                stroke="#38BDF8"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                points={pointsString}
-              />
-            )}
+              {/* Weight Line */}
+              {filteredLogs.length > 1 && (
+                <polyline
+                  fill="none"
+                  stroke="#38BDF8"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  points={pointsString}
+                />
+              )}
 
-            {/* Individual Data Points */}
-            {filteredLogs.map((log, idx) => {
-              const cx = getX(idx, filteredLogs.length);
-              const cy = getY(log.weightKg);
-              return (
-                <g key={log.id} className="group cursor-pointer">
-                  <circle cx={cx} cy={cy} r="4" fill="#38BDF8" className="transition-transform group-hover:r-6" />
-                  <text
-                    x={cx}
-                    y={cy - 10}
-                    textAnchor="middle"
-                    fill="#F1F5F9"
-                    fontSize="10"
-                    fontFamily="monospace"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    {log.weightKg}kg
-                  </text>
-                  <text
-                    x={cx}
-                    y={chartHeight - 2}
-                    textAnchor="middle"
-                    fill="#64748B"
-                    fontSize="9"
-                    fontFamily="monospace"
-                  >
-                    {log.date.slice(5)}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
+              {/* Individual Data Points */}
+              {filteredLogs.map((log, idx) => {
+                const cx = getX(idx, filteredLogs.length);
+                const cy = getY(log.weightKg);
+                return (
+                  <g key={log.id} className="group cursor-pointer">
+                    <circle cx={cx} cy={cy} r="4" fill="#38BDF8" className="transition-transform group-hover:r-6" />
+                    <text
+                      x={cx}
+                      y={cy - 10}
+                      textAnchor="middle"
+                      fill="#F1F5F9"
+                      fontSize="10"
+                      fontFamily="monospace"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      {log.weightKg}kg
+                    </text>
+                    <text
+                      x={cx}
+                      y={chartHeight - 2}
+                      textAnchor="middle"
+                      fill="#64748B"
+                      fontSize="9"
+                      fontFamily="monospace"
+                    >
+                      {log.date.slice(5)}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        )}
       </div>
 
       {/* ESTIMATED 1RM STRENGTH PROGRESSION */}
@@ -287,7 +302,7 @@ export const ProgressModule: React.FC<ProgressModuleProps> = ({
             <div>
               <h2 className="text-sm font-bold text-white whitespace-nowrap">Estimated 1RM Progression</h2>
               <p className="text-[10px] sm:text-[11px] text-slate-400">
-                Formula: {formula.toUpperCase()} ({formula === 'epley' ? 'W × (1 + R/30)' : 'W × 36 / (37 - R)'})
+                Formula: {formula.toUpperCase()} · Change in Profile &gt; Training Settings
               </p>
             </div>
           </div>
@@ -309,15 +324,6 @@ export const ProgressModule: React.FC<ProgressModuleProps> = ({
                 </button>
               ))}
             </div>
-
-            {/* Formula switcher toggle */}
-            <button
-              onClick={() => setFormula(formula === 'epley' ? 'brzycki' : 'epley')}
-              className="px-2.5 py-1 text-[11px] bg-[#141B24] border border-[#202C3B] rounded-lg text-slate-300 font-mono"
-              title="Toggle 1RM Formula"
-            >
-              {formula.toUpperCase()}
-            </button>
           </div>
         </div>
 
@@ -359,22 +365,30 @@ export const ProgressModule: React.FC<ProgressModuleProps> = ({
           </div>
         </div>
 
-        <div className="divide-y divide-[#17212D]">
-          {personalRecords.map((pr, idx) => (
-            <div key={idx} className="py-3 flex items-center justify-between text-xs">
-              <div>
-                <p className="font-bold text-white">{pr.exercise}</p>
-                <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                  Best Set: {pr.weight} · Recorded {pr.date}
-                </p>
+        {personalRecords.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="text-5xl mb-3">🏆</div>
+            <p className="text-sm font-bold text-white">No PRs yet</p>
+            <p className="text-xs text-slate-400 mt-1">Complete your first workout to start building your PR board.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[#17212D]">
+            {personalRecords.map((pr, idx) => (
+              <div key={idx} className="py-3 flex items-center justify-between text-xs">
+                <div>
+                  <p className="font-bold text-white">{pr.exercise}</p>
+                  <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                    Best Set: {pr.weight} · Recorded {pr.date}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold">Est. 1RM</span>
+                  <p className="text-base font-black text-amber-400 font-mono">{pr.est1RM}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Est. 1RM</span>
-                <p className="text-base font-black text-amber-400 font-mono">{pr.est1RM}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* MANUAL WEIGHT LOG MODAL */}

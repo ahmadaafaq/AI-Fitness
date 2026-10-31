@@ -30,6 +30,7 @@ import { SubscriptionModal } from './components/SubscriptionModal';
 import { FormAnalysisModule } from './components/FormAnalysisModule';
 import { ProfileModule } from './components/ProfileModule';
 import { MasterclassesModule } from './components/MasterclassesModule';
+import { GuidedIntroModal } from './components/GuidedIntroModal';
 import { CheckoutItem, PaymentCheckoutModal } from './components/PaymentCheckoutModal';
 import { calculateProgramPrescribedLoad } from './services/loadPreparation';
 import { Smartphone, Monitor, Sparkles } from 'lucide-react';
@@ -43,6 +44,7 @@ export default function App() {
   const [isAIOpen, setIsAIOpen] = useState(false);
   const [isMasterclassesOpen, setIsMasterclassesOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [showGuidedIntro, setShowGuidedIntro] = useState(false);
 
   // Mobile View Mode Switcher
   const [isMobileViewMode, setIsMobileViewMode] = useState(false);
@@ -99,6 +101,8 @@ export default function App() {
     setUserProfile(updated);
     StorageService.saveUserProfile(updated);
     setIsOnboardingOpen(false);
+    // Show guided first-run tour after completing onboarding
+    setShowGuidedIntro(true);
   };
 
   // Workout Handlers
@@ -471,6 +475,7 @@ export default function App() {
           programs={programs}
           exercises={exercises}
           history={workoutHistory}
+          telemetry={telemetry}
           isMobileMode={isMobile}
           onBack={handleGlobalBack}
           onStartProgramDay={handleStartProgramDay}
@@ -635,6 +640,14 @@ export default function App() {
             isInsidePhoneFrame={false}
           />
         </div>
+      )}
+
+      {/* GUIDED FIRST-RUN INTRO MODAL */}
+      {showGuidedIntro && (
+        <GuidedIntroModal
+          userName={userProfile.name}
+          onDismiss={() => setShowGuidedIntro(false)}
+        />
       )}
 
       {/* MULTI-STEP ONBOARDING MODAL */}

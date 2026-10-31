@@ -6,6 +6,7 @@ import {
   WorkoutProgram,
   WorkoutSession,
   UserProfile,
+  TelemetryData,
 } from '../types';
 import {
   Search,
@@ -29,6 +30,10 @@ import {
   Sparkles,
   Loader2,
   ArrowLeft,
+  Moon,
+  Heart,
+  Footprints,
+  ShieldCheck,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { InteractiveMuscleMap } from './InteractiveMuscleMap';
@@ -41,6 +46,7 @@ interface WorkoutModuleProps {
   programs: WorkoutProgram[];
   exercises: Exercise[];
   history: WorkoutSession[];
+  telemetry?: TelemetryData;
   isMobileMode?: boolean;
   onBack?: () => void;
   onStartProgramDay: (program: WorkoutProgram, dayIndex: number) => void;
@@ -54,6 +60,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
   programs,
   exercises,
   history,
+  telemetry,
   isMobileMode = false,
   onBack,
   onStartProgramDay,
@@ -62,7 +69,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
   onDeleteSession,
 }) => {
   const { t, language } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'programs' | 'library' | 'anatomy' | 'history'>('programs');
+  const [activeTab, setActiveTab] = useState<'programs' | 'library' | 'anatomy' | 'history' | 'recovery'>('programs');
 
   // Exercise Library Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -614,6 +621,17 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
           }`}
         >
           {t('workout.tabHistory')}
+        </button>
+        <button
+          onClick={() => setActiveTab('recovery')}
+          className={`flex-1 min-w-[75px] py-2 text-xs font-bold rounded-lg transition-colors text-center flex items-center justify-center gap-1 ${
+            activeTab === 'recovery'
+              ? 'bg-[#1C2633] text-lime-400 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Heart className="w-3 h-3" />
+          Recovery
         </button>
       </div>
 
@@ -1469,6 +1487,103 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: RECOVERY & READINESS */}
+      {activeTab === 'recovery' && (
+        <div className="space-y-4">
+          {/* Readiness Score Hero */}
+          <div className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-5 shadow-sm">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-[11px] text-slate-400 uppercase font-semibold tracking-wider">Today's Bio-Readiness</p>
+                <div className="flex items-baseline gap-3 mt-1">
+                  <span className="text-4xl font-black text-lime-400 font-mono tabular-nums">
+                    {telemetry?.readinessScore ?? 87}
+                  </span>
+                  <span className="text-sm font-bold text-white uppercase tracking-wide">
+                    / 100 · {telemetry?.recoveryStatus ?? 'Recovered'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed max-w-sm">
+                  CNS recovery is primed. Optimal day for compound movements at high load.
+                </p>
+              </div>
+              <div className="p-3 rounded-2xl bg-lime-500/10 border border-lime-500/20">
+                <ShieldCheck className="w-7 h-7 text-lime-400" />
+              </div>
+            </div>
+
+            {/* Readiness bar */}
+            <div className="w-full bg-[#1A232E] h-2.5 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-lime-400 transition-all duration-700"
+                style={{ width: `${telemetry?.readinessScore ?? 87}%` }}
+              />
+            </div>
+
+            <div className="mt-3 p-3 rounded-xl bg-[#141B23] border border-[#1E2D40] text-xs">
+              <p className="text-slate-400">Recommended Intensity:</p>
+              <p className="text-sm font-bold text-white font-mono mt-0.5">Heavy Working Sets (RPE 8–9)</p>
+              <p className="text-[11px] text-lime-400 mt-0.5">Best day for compound squat &amp; bench testing</p>
+            </div>
+          </div>
+
+          {/* Biometric Telemetry Cards */}
+          <div className={`grid gap-3 ${isMobileMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'}`}>
+            <div className="bg-[#10151C] border border-[#1E2734] p-4 rounded-2xl">
+              <div className="flex items-center gap-2 text-indigo-400 mb-1.5">
+                <Moon className="w-4 h-4" />
+                <span className="text-xs font-semibold">Sleep</span>
+              </div>
+              <p className="text-xl font-black text-white font-mono">{telemetry?.sleepHours ?? 7.8} hrs</p>
+              <p className="text-[11px] text-slate-400 mt-1">
+                {telemetry?.deepSleepPercent ?? 22}% Deep · {telemetry?.remPercent ?? 18}% REM
+              </p>
+            </div>
+
+            <div className="bg-[#10151C] border border-[#1E2734] p-4 rounded-2xl">
+              <div className="flex items-center gap-2 text-lime-400 mb-1.5">
+                <Zap className="w-4 h-4" />
+                <span className="text-xs font-semibold">HRV</span>
+              </div>
+              <p className="text-xl font-black text-white font-mono">{telemetry?.hrvMs ?? 62} ms</p>
+              <p className="text-[11px] text-emerald-400 mt-1">+8ms above baseline</p>
+            </div>
+
+            <div className="bg-[#10151C] border border-[#1E2734] p-4 rounded-2xl">
+              <div className="flex items-center gap-2 text-rose-400 mb-1.5">
+                <Heart className="w-4 h-4" />
+                <span className="text-xs font-semibold">Resting HR</span>
+              </div>
+              <p className="text-xl font-black text-white font-mono">{telemetry?.restingHeartRate ?? 52} bpm</p>
+              <p className="text-[11px] text-slate-400 mt-1">Steady autonomic tone</p>
+            </div>
+
+            <div className="bg-[#10151C] border border-[#1E2734] p-4 rounded-2xl">
+              <div className="flex items-center gap-2 text-sky-400 mb-1.5">
+                <Footprints className="w-4 h-4" />
+                <span className="text-xs font-semibold">Steps</span>
+              </div>
+              <p className="text-xl font-black text-white font-mono">
+                {(telemetry?.stepsToday ?? 7240).toLocaleString()}
+              </p>
+              <p className="text-[11px] text-slate-400 mt-1">Target: 10,000</p>
+            </div>
+          </div>
+
+          {/* Platform Integration note */}
+          <div className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-4 flex items-start gap-3">
+            <Activity className="w-5 h-5 text-lime-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold text-white">Health Platform Sync</p>
+              <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                Connect Apple HealthKit (iOS) or Google Health Connect (Android) for live biometric streams.
+                Sample telemetry is shown above.
+              </p>
             </div>
           </div>
         </div>

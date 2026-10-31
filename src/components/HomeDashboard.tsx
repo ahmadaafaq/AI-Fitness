@@ -23,6 +23,10 @@ import {
   Shield,
   Calculator,
   Info,
+  Droplets,
+  Medal,
+  Zap,
+  Target,
 } from 'lucide-react';
 
 interface HomeDashboardProps {
@@ -97,6 +101,51 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
   // 4. Seven-Day Activity Chart Data
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  // 5. Water Intake (local state, 8 glasses = 2L target)
+  const [waterGlasses, setWaterGlasses] = useState<number>(3);
+  const waterTarget = 8;
+
+  // 6. Streak & Achievement Badges
+  const workoutStreak = Math.min(workoutHistory.length, 7); // days in a row (capped demo)
+  const badges = [
+    {
+      id: 'streak',
+      icon: Zap,
+      label: `${workoutStreak}-Day Streak`,
+      color: 'text-lime-400',
+      bg: 'bg-lime-500/10',
+      border: 'border-lime-500/25',
+      earned: workoutStreak >= 3,
+    },
+    {
+      id: 'protein',
+      icon: Target,
+      label: 'Protein Champion',
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10',
+      border: 'border-emerald-500/25',
+      earned: totalProteinConsumed >= proteinTarget * 0.9,
+    },
+    {
+      id: 'volume',
+      icon: Medal,
+      label: 'Volume PR',
+      color: 'text-amber-400',
+      bg: 'bg-amber-500/10',
+      border: 'border-amber-500/25',
+      earned: weeklyWorkoutCount >= 3,
+    },
+    {
+      id: 'hydration',
+      icon: Droplets,
+      label: 'Hydrated',
+      color: 'text-sky-400',
+      bg: 'bg-sky-500/10',
+      border: 'border-sky-500/25',
+      earned: waterGlasses >= waterTarget,
+    },
+  ];
   const activityData = [
     { day: 'Mon', volume: 8420, completed: true },
     { day: 'Tue', volume: 0, completed: false },
@@ -132,6 +181,73 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
           Good morning, {userProfile.name.split(' ')[0]}
         </h1>
+      </div>
+
+      {/* ACHIEVEMENT BADGES */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+        {badges.map((badge) => {
+          const BadgeIcon = badge.icon;
+          return (
+            <div
+              key={badge.id}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border shrink-0 transition-all ${
+                badge.earned
+                  ? `${badge.bg} ${badge.border} ${badge.color}`
+                  : 'bg-[#0E1319] border-[#18212C] text-slate-600'
+              }`}
+            >
+              <BadgeIcon className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-bold whitespace-nowrap">{badge.label}</span>
+              {badge.earned && <span className="text-[10px]">✓</span>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* WATER INTAKE QUICK-TAP WIDGET */}
+      <div className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+              <Droplets className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-white">Hydration</h2>
+              <p className="text-[11px] text-slate-400">{waterGlasses} / {waterTarget} glasses · {(waterGlasses * 0.25).toFixed(2)}L of 2L</p>
+            </div>
+          </div>
+          <span className={`text-sm font-black font-mono tabular-nums ${
+            waterGlasses >= waterTarget ? 'text-sky-400' : 'text-slate-300'
+          }`}>
+            {Math.round((waterGlasses / waterTarget) * 100)}%
+          </span>
+        </div>
+
+        {/* 8-glass tap grid */}
+        <div className="flex items-center gap-1.5 mb-3">
+          {Array.from({ length: waterTarget }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setWaterGlasses(i < waterGlasses ? i : i + 1)}
+              aria-label={`Glass ${i + 1}`}
+              className={`flex-1 h-8 rounded-lg transition-all border ${
+                i < waterGlasses
+                  ? 'bg-sky-500 border-sky-400 shadow-sm shadow-sky-500/30'
+                  : 'bg-[#141B23] border-[#1E2734] hover:border-sky-600'
+              }`}
+            >
+              <Droplets className={`w-3.5 h-3.5 mx-auto ${ i < waterGlasses ? 'text-white' : 'text-slate-600' }`} />
+            </button>
+          ))}
+        </div>
+
+        {/* Progress track */}
+        <div className="w-full bg-[#1A232E] h-1.5 rounded-full overflow-hidden">
+          <div
+            className="bg-sky-400 h-full rounded-full transition-all duration-500"
+            style={{ width: `${Math.min(100, (waterGlasses / waterTarget) * 100)}%` }}
+          />
+        </div>
       </div>
 
       {/* D. Quick Actions Strip - 2x2 grid on mobile mode, 4-col on full desktop */}
@@ -248,7 +364,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-400">
                 <Flame className="w-4 h-4" />
               </div>
-              <h2 className="text-sm font-bold tracking-tight text-white">Daily Calorie & Macro Target</h2>
+              <h2 className="text-sm font-bold tracking-tight text-white">Today's Nutrition</h2>
             </div>
             <button
               onClick={() => onNavigateTab('nutrition')}
