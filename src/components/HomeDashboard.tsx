@@ -28,6 +28,7 @@ import {
   Zap,
   Target,
 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface HomeDashboardProps {
   userProfile: UserProfile;
@@ -64,6 +65,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   onOpenSubscription,
   currentSubscriptionTier = 'free',
 }) => {
+  const { t, language, setLanguage } = useLanguage();
+
   // 1. Calculate today's nutrition totals
   const totalCaloriesConsumed = todayMeals.reduce((acc, m) => acc + m.calories, 0);
   const totalProteinConsumed = Math.round(todayMeals.reduce((acc, m) => acc + m.protein, 0) * 10) / 10;
@@ -84,7 +87,9 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
     return sessionDate === new Date().toDateString();
   });
 
-  const scheduledWorkoutTitle = 'Push Day A (Chest / Delts / Triceps)';
+  const scheduledWorkoutTitle = language === 'uz'
+    ? "Itarish Kuni A (Ko'krak / Yelkalar / Tritseps)"
+    : 'Push Day A (Chest / Delts / Triceps)';
 
   // Weekly volume across completed sessions in the last 7 days
   const sevenDaysAgo = new Date();
@@ -99,20 +104,17 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   const oldestLog = weightLogs[0];
   const weightChange30Days = oldestLog ? Math.round((currentWeight - oldestLog.weightKg) * 10) / 10 : -2.0;
 
-  // 4. Seven-Day Activity Chart Data
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-  // 5. Water Intake (local state, 8 glasses = 2L target)
+  // 4. Water Intake (local state, 8 glasses = 2L target)
   const [waterGlasses, setWaterGlasses] = useState<number>(3);
   const waterTarget = 8;
 
-  // 6. Streak & Achievement Badges
-  const workoutStreak = Math.min(workoutHistory.length, 7); // days in a row (capped demo)
+  // 5. Streak & Achievement Badges
+  const workoutStreak = Math.min(workoutHistory.length || 3, 7);
   const badges = [
     {
       id: 'streak',
       icon: Zap,
-      label: `${workoutStreak}-Day Streak`,
+      label: language === 'uz' ? `${workoutStreak} kunlik seriya` : `${workoutStreak}-Day Streak`,
       color: 'text-lime-400',
       bg: 'bg-lime-500/10',
       border: 'border-lime-500/25',
@@ -121,7 +123,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
     {
       id: 'protein',
       icon: Target,
-      label: 'Protein Champion',
+      label: t('home.badge.protein', 'Protein Champion'),
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
       border: 'border-emerald-500/25',
@@ -130,7 +132,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
     {
       id: 'volume',
       icon: Medal,
-      label: 'Volume PR',
+      label: t('home.badge.volume', 'Volume PR'),
       color: 'text-amber-400',
       bg: 'bg-amber-500/10',
       border: 'border-amber-500/25',
@@ -139,13 +141,24 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
     {
       id: 'hydration',
       icon: Droplets,
-      label: 'Hydrated',
+      label: t('home.badge.hydrated', 'Hydrated'),
       color: 'text-sky-400',
       bg: 'bg-sky-500/10',
       border: 'border-sky-500/25',
       earned: waterGlasses >= waterTarget,
     },
   ];
+
+  const daysLabelMap: { [key: string]: { en: string; uz: string } } = {
+    Mon: { en: 'Mon', uz: 'Dush' },
+    Tue: { en: 'Tue', uz: 'Sesh' },
+    Wed: { en: 'Wed', uz: 'Chor' },
+    Thu: { en: 'Thu', uz: 'Pay' },
+    Fri: { en: 'Fri', uz: 'Jum' },
+    Sat: { en: 'Sat', uz: 'Shan' },
+    Sun: { en: 'Sun', uz: 'Yak' },
+  };
+
   const activityData = [
     { day: 'Mon', volume: 8420, completed: true },
     { day: 'Tue', volume: 0, completed: false },
@@ -157,29 +170,80 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   ];
   const maxVolume = 12000;
 
-  const todayFormatted = new Intl.DateTimeFormat('en-US', {
+  // Bilingual Date & Greeting
+  const todayFormatted = new Intl.DateTimeFormat(language === 'uz' ? 'uz-UZ' : 'en-US', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
   }).format(new Date());
 
+  const currentHour = new Date().getHours();
+  const greetingText =
+    currentHour < 12
+      ? t('home.greetingMorning', 'Good morning')
+      : currentHour < 18
+      ? t('home.greetingAfternoon', 'Good afternoon')
+      : t('home.greetingEvening', 'Good evening');
+
+  const recoveryStatusText =
+    telemetry.recoveryStatus === 'Optimal'
+      ? language === 'uz'
+        ? "A'lo darajada"
+        : 'Optimal'
+      : telemetry.recoveryStatus === 'Recovering'
+      ? language === 'uz'
+        ? 'Tiklanmoqda'
+        : 'Recovering'
+      : language === 'uz'
+      ? "Zo'riqqan"
+      : 'Strained';
+
   return (
     <div className="space-y-4 sm:space-y-6 pb-20">
       {/* A. Daily Overview & Greeting */}
-      <div className="border-b border-[#18212C] pb-3 sm:pb-4 space-y-1.5">
-        <div className="flex items-center justify-between">
+      <div className="border-b border-[#18212C] pb-3 sm:pb-4 space-y-2">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-lime-400">
             <Calendar className="w-3.5 h-3.5" />
-            <span>{todayFormatted}</span>
+            <span className="capitalize">{todayFormatted}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-lime-500/10 text-lime-400 font-mono font-bold text-[11px] border border-lime-500/20">
-            <span>Readiness: {telemetry.readinessScore}%</span>
-            <span className="text-slate-500">·</span>
-            <span>{telemetry.recoveryStatus}</span>
+
+          <div className="flex items-center gap-2">
+            {/* Quick in-screen Language Selector */}
+            <div className="flex items-center p-0.5 bg-[#10151C] border border-[#1E2734] rounded-lg">
+              <button
+                onClick={() => setLanguage('en')}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                  language === 'en'
+                    ? 'bg-lime-400 text-slate-950 font-black'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setLanguage('uz')}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                  language === 'uz'
+                    ? 'bg-emerald-400 text-slate-950 font-black'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                UZ
+              </button>
+            </div>
+
+            {/* Bio Readiness Badge */}
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-lime-500/10 text-lime-400 font-mono font-bold text-[11px] border border-lime-500/20">
+              <span>{t('home.readiness', 'Readiness')}: {telemetry.readinessScore}%</span>
+              <span className="text-slate-500">·</span>
+              <span>{recoveryStatusText}</span>
+            </div>
           </div>
         </div>
+
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
-          Good morning, {userProfile.name.split(' ')[0]}
+          {greetingText}, {userProfile.name.split(' ')[0]}
         </h1>
       </div>
 
@@ -212,8 +276,10 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               <Droplets className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">Hydration</h2>
-              <p className="text-[11px] text-slate-400">{waterGlasses} / {waterTarget} glasses · {(waterGlasses * 0.25).toFixed(2)}L of 2L</p>
+              <h2 className="text-sm font-bold text-white">{t('home.hydration', 'Hydration')}</h2>
+              <p className="text-[11px] text-slate-400">
+                {waterGlasses} / {waterTarget} {t('home.glasses', 'glasses')} · {(waterGlasses * 0.25).toFixed(2)}L {t('home.of', 'of')} 2L
+              </p>
             </div>
           </div>
           <span className={`text-sm font-black font-mono tabular-nums ${
@@ -257,7 +323,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           className="flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-3 bg-lime-400 hover:bg-lime-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-lime-500/20 transition-all active:scale-[0.98] whitespace-nowrap"
         >
           <Play className="w-3.5 h-3.5 fill-current" />
-          <span>Start Workout</span>
+          <span>{t('home.quick.startWorkout', 'Start Workout')}</span>
         </button>
 
         <button
@@ -265,7 +331,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           className="flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-3 bg-[#131A22] hover:bg-[#18232E] border border-[#212E3D] text-slate-200 font-semibold text-xs rounded-xl transition-all whitespace-nowrap"
         >
           <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Log Food</span>
+          <span>{t('home.quick.logFood', 'Log Food')}</span>
         </button>
 
         <button
@@ -273,7 +339,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           className="flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-3 bg-[#131A22] hover:bg-[#18232E] border border-[#212E3D] text-slate-200 font-semibold text-xs rounded-xl transition-all whitespace-nowrap"
         >
           <Scale className="w-3.5 h-3.5 text-sky-400" />
-          <span>Log Weight</span>
+          <span>{t('home.quick.logWeight', 'Log Weight')}</span>
         </button>
 
         <button
@@ -281,11 +347,11 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           className="flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-3 bg-[#131A22] hover:bg-[#18232E] border border-[#212E3D] text-slate-200 font-semibold text-xs rounded-xl transition-all whitespace-nowrap"
         >
           <Sparkles className="w-3.5 h-3.5 text-lime-400" />
-          <span>Ask AI Coach</span>
+          <span>{t('home.quick.askAI', 'Ask AI Coach')}</span>
         </button>
       </div>
 
-      {/* ATHLETIC TELEMETRY & LAB SUITE (Relocated from TopBar) */}
+      {/* ATHLETIC TELEMETRY & LAB SUITE */}
       <div className={`grid gap-2.5 ${isMobileMode ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'}`}>
         {/* 1. Bio-Readiness Telemetry */}
         <button
@@ -297,16 +363,16 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               <Activity className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Bio-Readiness</p>
+              <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">{t('home.bioReadiness', 'Bio-Readiness')}</p>
               <p className="text-xs font-black text-white flex items-center gap-1.5 mt-0.5">
                 <span className="text-lime-400 font-mono">{telemetry.readinessScore}%</span>
                 <span>·</span>
-                <span>{telemetry.recoveryStatus}</span>
+                <span>{recoveryStatusText}</span>
               </p>
             </div>
           </div>
           <span className="text-[10px] text-lime-400 font-semibold flex items-center gap-0.5">
-            View <ChevronRight className="w-3 h-3" />
+            {t('home.view', 'View')} <ChevronRight className="w-3 h-3" />
           </span>
         </button>
 
@@ -320,12 +386,12 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               <Camera className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Computer Vision</p>
-              <p className="text-xs font-black text-white mt-0.5">Form Lab AI</p>
+              <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">{t('home.computerVision', 'Computer Vision')}</p>
+              <p className="text-xs font-black text-white mt-0.5">{t('home.formLabAI', 'Form Lab AI')}</p>
             </div>
           </div>
           <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-0.5">
-            Analyze <ChevronRight className="w-3 h-3" />
+            {t('home.analyze', 'Analyze')} <ChevronRight className="w-3 h-3" />
           </span>
         </button>
 
@@ -339,23 +405,23 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               <Shield className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Membership Tier</p>
+              <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">{t('home.membershipTier', 'Membership Tier')}</p>
               <p className="text-xs font-black text-white mt-0.5 capitalize">
                 {currentSubscriptionTier === 'pro'
-                  ? 'Olympian Pro'
+                  ? t('home.tierPro', 'Olympian Pro')
                   : currentSubscriptionTier === 'premium'
-                  ? 'Athlete Premium'
-                  : 'Free Starter'}
+                  ? t('home.tierPremium', 'Athlete Premium')
+                  : t('home.tierFree', 'Free Starter')}
               </p>
             </div>
           </div>
           <span className="text-[10px] text-amber-400 font-semibold flex items-center gap-0.5">
-            Upgrade <ChevronRight className="w-3 h-3" />
+            {t('home.upgrade', 'Upgrade')} <ChevronRight className="w-3 h-3" />
           </span>
         </button>
       </div>
 
-      {/* Main Section: Nutrition + Training Summary (Stacked vertically in mobile mode) */}
+      {/* Main Section: Nutrition + Training Summary */}
       <div className={`grid gap-4 ${isMobileMode ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
         {/* Nutrition Card */}
         <div className="bg-[#10151C] border border-[#1E2734] rounded-2xl p-4 sm:p-5 shadow-sm">
@@ -364,27 +430,27 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-400">
                 <Flame className="w-4 h-4" />
               </div>
-              <h2 className="text-sm font-bold tracking-tight text-white">Today's Nutrition</h2>
+              <h2 className="text-sm font-bold tracking-tight text-white">{t('home.todaysNutrition', "Today's Nutrition")}</h2>
             </div>
             <button
               onClick={() => onNavigateTab('nutrition')}
               className="text-xs text-lime-400 hover:text-lime-300 font-medium flex items-center gap-0.5"
             >
-              Details <ChevronRight className="w-3.5 h-3.5" />
+              {t('home.details', 'Details')} <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {/* Calorie Stats */}
           <div className="flex items-baseline justify-between py-2 border-b border-[#1A232E] mb-3.5">
             <div>
-              <p className="text-[11px] text-slate-400">Consumed</p>
+              <p className="text-[11px] text-slate-400">{t('home.consumed', 'Consumed')}</p>
               <p className="text-xl sm:text-2xl font-black text-white font-mono tabular-nums">
                 {totalCaloriesConsumed.toLocaleString()}{' '}
-                <span className="text-xs font-sans font-normal text-slate-400">kcal</span>
+                <span className="text-xs font-sans font-normal text-slate-400">{language === 'uz' ? 'kkal' : 'kcal'}</span>
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[11px] text-slate-400">Remaining Budget</p>
+              <p className="text-[11px] text-slate-400">{t('home.remainingBudget', 'Remaining Budget')}</p>
               <p className="text-xl sm:text-2xl font-black text-lime-400 font-mono tabular-nums">
                 {remainingCalories.toLocaleString()}{' '}
                 <span className="text-xs font-sans font-normal text-slate-400">/ {targetCalories}</span>
@@ -401,8 +467,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               />
             </div>
             <div className="flex justify-between text-[11px] text-slate-400">
-              <span>{caloriePercent}% consumed</span>
-              <span>Target: {targetCalories} kcal</span>
+              <span>{caloriePercent}% {t('home.consumedPercent', 'consumed')}</span>
+              <span>{t('home.target', 'Target')}: {targetCalories} {language === 'uz' ? 'kkal' : 'kcal'}</span>
             </div>
           </div>
 
@@ -411,7 +477,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             {/* Protein */}
             <div className="bg-[#141B23] p-2 sm:p-3 rounded-xl border border-[#212C3B]">
               <div className="flex flex-col sm:flex-row sm:justify-between text-[10px] sm:text-[11px] mb-1">
-                <span className="text-slate-400 font-medium">Protein</span>
+                <span className="text-slate-400 font-medium">{t('home.protein', 'Protein')}</span>
                 <span className="font-mono text-emerald-400 font-bold">{totalProteinConsumed}g</span>
               </div>
               <div className="w-full bg-[#1F2937] h-1.5 rounded-full overflow-hidden mb-1">
@@ -420,13 +486,13 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   style={{ width: `${Math.min(100, (totalProteinConsumed / proteinTarget) * 100)}%` }}
                 />
               </div>
-              <p className="text-[9px] sm:text-[10px] text-slate-400 text-right truncate">Target: {proteinTarget}g</p>
+              <p className="text-[9px] sm:text-[10px] text-slate-400 text-right truncate">{t('home.target', 'Target')}: {proteinTarget}g</p>
             </div>
 
             {/* Carbs */}
             <div className="bg-[#141B23] p-2 sm:p-3 rounded-xl border border-[#212C3B]">
               <div className="flex flex-col sm:flex-row sm:justify-between text-[10px] sm:text-[11px] mb-1">
-                <span className="text-slate-400 font-medium">Carbs</span>
+                <span className="text-slate-400 font-medium">{t('home.carbs', 'Carbs')}</span>
                 <span className="font-mono text-sky-400 font-bold">{totalCarbsConsumed}g</span>
               </div>
               <div className="w-full bg-[#1F2937] h-1.5 rounded-full overflow-hidden mb-1">
@@ -435,13 +501,13 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   style={{ width: `${Math.min(100, (totalCarbsConsumed / carbsTarget) * 100)}%` }}
                 />
               </div>
-              <p className="text-[9px] sm:text-[10px] text-slate-400 text-right truncate">Target: {carbsTarget}g</p>
+              <p className="text-[9px] sm:text-[10px] text-slate-400 text-right truncate">{t('home.target', 'Target')}: {carbsTarget}g</p>
             </div>
 
             {/* Fat */}
             <div className="bg-[#141B23] p-2 sm:p-3 rounded-xl border border-[#212C3B]">
               <div className="flex flex-col sm:flex-row sm:justify-between text-[10px] sm:text-[11px] mb-1">
-                <span className="text-slate-400 font-medium">Fat</span>
+                <span className="text-slate-400 font-medium">{t('home.fat', 'Fat')}</span>
                 <span className="font-mono text-amber-400 font-bold">{totalFatConsumed}g</span>
               </div>
               <div className="w-full bg-[#1F2937] h-1.5 rounded-full overflow-hidden mb-1">
@@ -450,7 +516,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   style={{ width: `${Math.min(100, (totalFatConsumed / fatTarget) * 100)}%` }}
                 />
               </div>
-              <p className="text-[9px] sm:text-[10px] text-slate-400 text-right truncate">Target: {fatTarget}g</p>
+              <p className="text-[9px] sm:text-[10px] text-slate-400 text-right truncate">{t('home.target', 'Target')}: {fatTarget}g</p>
             </div>
           </div>
 
@@ -458,13 +524,13 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           <div className="mt-3.5 pt-3 border-t border-[#1B2533] flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs text-slate-300">
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>AI Uzbek Athlete Diet Planner</span>
+              <span>{t('home.uzbekDietPlanner', 'AI Uzbek Athlete Diet Planner')}</span>
             </div>
             <button
               onClick={() => onNavigateTab('nutrition')}
               className="px-2.5 py-1 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 font-bold text-[11px] rounded-lg transition-colors flex items-center gap-1"
             >
-              <span>Open Planner</span>
+              <span>{t('home.openPlanner', 'Open Planner')}</span>
               <ChevronRight className="w-3 h-3" />
             </button>
           </div>
@@ -478,13 +544,13 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 <div className="p-1.5 rounded-lg bg-lime-500/10 text-lime-400">
                   <Dumbbell className="w-4 h-4" />
                 </div>
-                <h2 className="text-sm font-bold tracking-tight text-white">Today's Training Focus</h2>
+                <h2 className="text-sm font-bold tracking-tight text-white">{t('home.todaysTrainingFocus', "Today's Training Focus")}</h2>
               </div>
               <button
                 onClick={() => onNavigateTab('workout')}
                 className="text-xs text-lime-400 hover:text-lime-300 font-medium flex items-center gap-0.5"
               >
-                Workouts <ChevronRight className="w-3.5 h-3.5" />
+                {t('home.workouts', 'Workouts')} <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
@@ -493,22 +559,24 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[11px] text-lime-400 font-semibold uppercase tracking-wider">
-                    Program: Push Pull Legs
+                    {t('home.program', 'Program')}: Push Pull Legs
                   </span>
                   <h3 className="text-base font-bold text-white mt-0.5">{scheduledWorkoutTitle}</h3>
-                  <p className="text-xs text-slate-400 mt-1">5 Exercises · 17 Sets · Target RPE 8.0</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    5 {language === 'uz' ? 'Mashq' : 'Exercises'} · 17 {language === 'uz' ? 'Yondashuv' : 'Sets'} · {t('home.target', 'Target')} RPE 8.0
+                  </p>
                 </div>
                 {todayWorkoutDone ? (
                   <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
                     <CheckCircle2 className="w-4 h-4" />
-                    Completed
+                    {t('home.completed', 'Completed')}
                   </div>
                 ) : (
                   <button
                     onClick={onStartWorkout}
                     className="px-3 py-1.5 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold rounded-lg transition-colors"
                   >
-                    Start
+                    {t('home.start', 'Start')}
                   </button>
                 )}
               </div>
@@ -517,32 +585,32 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             {/* Training Stats Row */}
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-[#141B23] p-3 rounded-xl border border-[#212C3B]">
-                <p className="text-[11px] text-slate-400 font-medium">Frequency</p>
+                <p className="text-[11px] text-slate-400 font-medium">{t('home.frequency', 'Frequency')}</p>
                 <p className="text-lg font-bold text-white font-mono tabular-nums mt-0.5">
                   {weeklyWorkoutCount} / {userProfile.weeklyFrequency || 4}
                 </p>
-                <p className="text-[10px] text-slate-400">Sessions / wk</p>
+                <p className="text-[10px] text-slate-400">{t('home.sessionsPerWk', 'Sessions / wk')}</p>
               </div>
 
               <div className="bg-[#141B23] p-3 rounded-xl border border-[#212C3B]">
-                <p className="text-[11px] text-slate-400 font-medium">Total Volume</p>
+                <p className="text-[11px] text-slate-400 font-medium">{t('home.totalVolume', 'Total Volume')}</p>
                 <p className="text-lg font-bold text-lime-400 font-mono tabular-nums mt-0.5">
                   {(weeklyTotalVolume / 1000).toFixed(1)}k
                 </p>
-                <p className="text-[10px] text-slate-400">kg lifted this wk</p>
+                <p className="text-[10px] text-slate-400">{t('home.kgLiftedWk', 'kg lifted this wk')}</p>
               </div>
 
               <div className="bg-[#141B23] p-3 rounded-xl border border-[#212C3B]">
-                <p className="text-[11px] text-slate-400 font-medium">Est. Strength</p>
+                <p className="text-[11px] text-slate-400 font-medium">{t('home.estStrength', 'Est. Strength')}</p>
                 <p className="text-lg font-bold text-sky-400 font-mono tabular-nums mt-0.5">+4.2%</p>
-                <p className="text-[10px] text-emerald-400">Progressive overload</p>
+                <p className="text-[10px] text-emerald-400">{t('home.progressiveOverload', 'Progressive overload')}</p>
               </div>
             </div>
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#1B2430] flex items-center justify-between text-xs text-slate-400">
-            <span>Last session completed: 2 days ago</span>
-            <span className="text-slate-300 font-medium">Recovery status: 100% recovered</span>
+            <span>{t('home.lastSession', 'Last session completed: 2 days ago')}</span>
+            <span className="text-slate-300 font-medium">{t('home.recoveryStatusLabel', 'Recovery status: 100% recovered')}</span>
           </div>
         </div>
       </div>
@@ -557,27 +625,27 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 <div className="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
                   <Scale className="w-4 h-4" />
                 </div>
-                <h2 className="text-sm font-bold tracking-tight text-white">Body Weight</h2>
+                <h2 className="text-sm font-bold tracking-tight text-white">{t('home.bodyWeight', 'Body Weight')}</h2>
               </div>
               <button
                 onClick={onLogWeight}
                 className="text-xs text-lime-400 hover:text-lime-300 font-medium flex items-center gap-0.5"
               >
-                Log Entry
+                {t('home.logEntry', 'Log Entry')}
               </button>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-baseline justify-between">
                 <div>
-                  <p className="text-xs text-slate-400">Current Weight</p>
+                  <p className="text-xs text-slate-400">{t('home.currentWeight', 'Current Weight')}</p>
                   <p className="text-3xl font-black text-white font-mono tabular-nums">
                     {currentWeight}{' '}
                     <span className="text-sm font-sans font-medium text-slate-400">kg</span>
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-slate-400">Target Goal</p>
+                  <p className="text-xs text-slate-400">{t('home.targetGoal', 'Target Goal')}</p>
                   <p className="text-xl font-bold text-slate-300 font-mono tabular-nums">
                     {targetWeight} <span className="text-xs text-slate-400">kg</span>
                   </p>
@@ -591,8 +659,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     <ArrowDownRight className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-slate-200">Last 30 Days</p>
-                    <p className="text-[11px] text-slate-400">Consistent fat loss trajectory</p>
+                    <p className="text-xs font-semibold text-slate-200">{t('home.last30Days', 'Last 30 Days')}</p>
+                    <p className="text-[11px] text-slate-400">{t('home.fatLossTrajectory', 'Consistent fat loss trajectory')}</p>
                   </div>
                 </div>
                 <p className="text-sm font-bold text-emerald-400 font-mono tabular-nums">
@@ -606,7 +674,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             onClick={() => onNavigateTab('progress')}
             className="mt-4 pt-3 border-t border-[#1B2430] text-xs text-lime-400 hover:text-lime-300 font-semibold flex items-center justify-center gap-1 w-full"
           >
-            View Weight History & Trends <TrendingUp className="w-3.5 h-3.5" />
+            {t('home.viewWeightHistory', 'View Weight History & Trends')} <TrendingUp className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -619,12 +687,14 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   <Calculator className="w-4 h-4" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold tracking-tight text-white">BMI Calculator</h2>
-                  <p className="text-[10px] text-slate-400">Height: {userProfile.heightCm || 180} cm · Weight: {currentWeight} kg</p>
+                  <h2 className="text-sm font-bold tracking-tight text-white">{t('home.bmiCalculator', 'BMI Calculator')}</h2>
+                  <p className="text-[10px] text-slate-400">
+                    {t('home.height', 'Height')}: {userProfile.heightCm || 180} {language === 'uz' ? 'sm' : 'cm'} · {t('home.weight', 'Weight')}: {currentWeight} kg
+                  </p>
                 </div>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-lime-500/10 text-lime-400 font-bold border border-lime-500/20">
-                Formula Quetelet
+                {t('home.formulaQuetelet', 'Formula Quetelet')}
               </span>
             </div>
 
@@ -632,22 +702,34 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             {(() => {
               const hM = (userProfile.heightCm || 180) / 100;
               const bmi = Math.round((currentWeight / (hM * hM)) * 10) / 10;
-              let label = 'Optimal / Athletic';
+              let label = t('home.optimal', 'Optimal / Athletic');
               let badgeColor = 'text-lime-400 bg-lime-500/10 border-lime-500/20';
-              let note = 'Normal healthy athletic range. Excellent power-to-weight ratio.';
+              let note =
+                language === 'uz'
+                  ? "Sog'lom sportcha diapazon. Zo'r quvvat-vazn nisbati."
+                  : 'Normal healthy athletic range. Excellent power-to-weight ratio.';
 
               if (bmi < 18.5) {
-                label = 'Underweight';
+                label = t('home.underweight', 'Underweight');
                 badgeColor = 'text-sky-400 bg-sky-500/10 border-sky-500/20';
-                note = 'Caloric surplus and hypertrophy resistance training recommended.';
+                note =
+                  language === 'uz'
+                    ? "Kaloriya profisiti va gipertrofiya mashqlari tavsiya etiladi."
+                    : 'Caloric surplus and hypertrophy resistance training recommended.';
               } else if (bmi >= 25 && bmi < 30) {
-                label = 'Athletic / Overweight';
+                label = t('home.overweight', 'Athletic / Overweight');
                 badgeColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-                note = 'Muscular strength athletes often fall here due to high lean mass density.';
+                note =
+                  language === 'uz'
+                    ? "Muskul massasi yuqori sportchilar ko'pincha ushbu oraliqda bo'ladi."
+                    : 'Muscular strength athletes often fall here due to high lean mass density.';
               } else if (bmi >= 30) {
-                label = 'High Risk';
+                label = t('home.highRisk', 'High Risk');
                 badgeColor = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
-                note = 'Structured progressive deficit and aerobic conditioning advised.';
+                note =
+                  language === 'uz'
+                    ? "Strukturaviy kaloriya defitsiti va aerobik mashg'ulot tavsiya etiladi."
+                    : 'Structured progressive deficit and aerobic conditioning advised.';
               }
 
               const normalMinKg = Math.round(18.5 * hM * hM * 10) / 10;
@@ -657,7 +739,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 <div className="space-y-3">
                   <div className="flex items-baseline justify-between">
                     <div>
-                      <p className="text-[11px] text-slate-400">Mass Index Score</p>
+                      <p className="text-[11px] text-slate-400">{t('home.massIndexScore', 'Mass Index Score')}</p>
                       <div className="flex items-baseline gap-2">
                         <span className="text-3xl font-black text-white font-mono tabular-nums">{bmi}</span>
                         <span className="text-xs text-slate-400">kg/m²</span>
@@ -680,17 +762,17 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                       />
                     </div>
                     <div className="flex justify-between text-[9px] text-slate-500 font-mono">
-                      <span>18.5 Under</span>
-                      <span className="text-lime-400 font-semibold">18.5 - 24.9 Optimal</span>
-                      <span>25+ High</span>
+                      <span>18.5 {t('home.underweight', 'Under')}</span>
+                      <span className="text-lime-400 font-semibold">18.5 - 24.9 {t('home.optimal', 'Optimal')}</span>
+                      <span>25+ {t('home.highRisk', 'High')}</span>
                     </div>
                   </div>
 
                   {/* Athlete Context Note */}
                   <div className="p-2.5 rounded-xl bg-[#141B23] border border-[#212C3B] text-[11px] text-slate-300 space-y-1">
-                    <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-semibold">
+                    <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-semibold flex-wrap">
                       <Info className="w-3 h-3 text-lime-400 shrink-0" />
-                      <span>Ideal Weight for {userProfile.heightCm || 180} cm:</span>
+                      <span>{t('home.idealWeightFor', 'Ideal Weight for')} {userProfile.heightCm || 180} {language === 'uz' ? 'sm' : 'cm'}:</span>
                       <span className="font-mono text-white font-bold">{normalMinKg} – {normalMaxKg} kg</span>
                     </div>
                     <p className="text-[10px] text-slate-400 leading-tight">{note}</p>
@@ -701,7 +783,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#1B2430] flex items-center justify-between text-[11px] text-slate-400">
-            <span>Height: {userProfile.heightCm || 180} cm</span>
+            <span>{t('home.height', 'Height')}: {userProfile.heightCm || 180} {language === 'uz' ? 'sm' : 'cm'}</span>
             <span className="text-lime-400 font-mono font-semibold">Formula: Metric</span>
           </div>
         </div>
@@ -714,20 +796,27 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 <div className="p-1.5 rounded-lg bg-lime-500/10 text-lime-400">
                   <TrendingUp className="w-4 h-4" />
                 </div>
-                <h2 className="text-sm font-bold tracking-tight text-white">7-Day Training Activity & Volume</h2>
+                <h2 className="text-sm font-bold tracking-tight text-white">{t('home.sevenDayActivity', '7-Day Training Activity & Volume')}</h2>
               </div>
-              <span className="text-xs text-slate-400">Target: {userProfile.weeklyFrequency || 4} workouts</span>
+              <span className="text-xs text-slate-400">
+                {language === 'uz'
+                  ? `Maqsad: ${userProfile.weeklyFrequency || 4} mashg‘ulot`
+                  : `Target: ${userProfile.weeklyFrequency || 4} workouts`}
+              </span>
             </div>
 
             {/* Bar Chart Container */}
             <div className="h-40 flex items-end justify-between gap-2 pt-4 px-2">
               {activityData.map((item, idx) => {
                 const heightPercent = item.volume > 0 ? Math.min(100, Math.max(15, (item.volume / maxVolume) * 100)) : 4;
+                const localizedDay = daysLabelMap[item.day]
+                  ? daysLabelMap[item.day][language]
+                  : item.day;
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
                     {/* Tooltip on hover */}
                     <span className="text-[10px] text-slate-400 font-mono opacity-0 group-hover:opacity-100 transition-opacity">
-                      {item.volume > 0 ? `${(item.volume / 1000).toFixed(1)}k` : 'Rest'}
+                      {item.volume > 0 ? `${(item.volume / 1000).toFixed(1)}k` : t('home.rest', 'Rest')}
                     </span>
                     <div className="w-full max-w-[42px] bg-[#17212C] rounded-t-lg h-full flex items-end p-1">
                       <div
@@ -738,7 +827,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                       />
                     </div>
                     <span className={`text-xs font-semibold ${item.completed ? 'text-lime-400' : 'text-slate-500'}`}>
-                      {item.day}
+                      {localizedDay}
                     </span>
                   </div>
                 );
@@ -747,8 +836,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#1B2430] flex items-center justify-between text-xs text-slate-400">
-            <span>2 Sessions Completed · 1 Rest Day · 1 Scheduled Today</span>
-            <span className="text-lime-400 font-mono font-semibold">Weekly Overload: +5.1%</span>
+            <span>{t('home.activitySummary', '2 Sessions Completed · 1 Rest Day · 1 Scheduled Today')}</span>
+            <span className="text-lime-400 font-mono font-semibold">{t('home.weeklyOverload', 'Weekly Overload')}: +5.1%</span>
           </div>
         </div>
       </div>

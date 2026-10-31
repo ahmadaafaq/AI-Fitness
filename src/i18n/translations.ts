@@ -309,4 +309,291 @@ export const translations: Translations = {
     en: 'How should I interpret an RPE 9 vs RPE 8?',
     uz: 'RPE 9 va RPE 8 farqini qanday tushunish kerak?',
   },
+
+  // Home Dashboard
+  'home.greetingMorning': {
+    en: 'Good morning',
+    uz: 'Xayrli tong',
+  },
+  'home.greetingAfternoon': {
+    en: 'Good afternoon',
+    uz: 'Xayrli kun',
+  },
+  'home.greetingEvening': {
+    en: 'Good evening',
+    uz: 'Xayrli kech',
+  },
+  'home.readiness': {
+    en: 'Readiness',
+    uz: 'Tayyorgarlik',
+  },
+  'home.hydration': {
+    en: 'Hydration',
+    uz: 'Gidratatsiya',
+  },
+  'home.glasses': {
+    en: 'glasses',
+    uz: 'stakan',
+  },
+  'home.of': {
+    en: 'of',
+    uz: 'dan',
+  },
+  'home.badge.streak': {
+    en: 'Day Streak',
+    uz: 'kunlik seriya',
+  },
+  'home.badge.protein': {
+    en: 'Protein Champion',
+    uz: 'Oqsil Chempioni',
+  },
+  'home.badge.volume': {
+    en: 'Volume PR',
+    uz: 'Hajm Rekordi',
+  },
+  'home.badge.hydrated': {
+    en: 'Hydrated',
+    uz: 'Gidratatsiyalangan',
+  },
+  'home.quick.startWorkout': {
+    en: 'Start Workout',
+    uz: "Mashg'ulot",
+  },
+  'home.quick.logFood': {
+    en: 'Log Food',
+    uz: 'Taom Kiritish',
+  },
+  'home.quick.logWeight': {
+    en: 'Log Weight',
+    uz: 'Vazn Kiritish',
+  },
+  'home.quick.askAI': {
+    en: 'Ask AI Coach',
+    uz: 'AI Murabbiy',
+  },
+  'home.bioReadiness': {
+    en: 'Bio-Readiness',
+    uz: 'Bio-Tayyorgarlik',
+  },
+  'home.view': {
+    en: 'View',
+    uz: "Ko'rish",
+  },
+  'home.computerVision': {
+    en: 'Computer Vision',
+    uz: "Kompyuter Ko'rishi",
+  },
+  'home.formLabAI': {
+    en: 'Form Lab AI',
+    uz: 'Texnika AI',
+  },
+  'home.analyze': {
+    en: 'Analyze',
+    uz: 'Tahlil qilish',
+  },
+  'home.membershipTier': {
+    en: 'Membership Tier',
+    uz: "A'zolik Darajasi",
+  },
+  'home.tierPro': {
+    en: 'Olympian Pro',
+    uz: 'Olimpiyachi Pro',
+  },
+  'home.tierPremium': {
+    en: 'Athlete Premium',
+    uz: 'Sportchi Premium',
+  },
+  'home.tierFree': {
+    en: 'Free Starter',
+    uz: "Bepul Boshlang'ich",
+  },
+  'home.upgrade': {
+    en: 'Upgrade',
+    uz: 'Yangilash',
+  },
+  'home.todaysNutrition': {
+    en: "Today's Nutrition",
+    uz: 'Bugungi Oziqlanish',
+  },
+  'home.details': {
+    en: 'Details',
+    uz: 'Batafsil',
+  },
+  'home.consumed': {
+    en: 'Consumed',
+    uz: "Iste'mol qilindi",
+  },
+  'home.remainingBudget': {
+    en: 'Remaining Budget',
+    uz: "Qolgan Me'yor",
+  },
+  'home.consumedPercent': {
+    en: 'consumed',
+    uz: "iste'mol qilindi",
+  },
+  'home.target': {
+    en: 'Target',
+    uz: 'Maqsad',
+  },
+  'home.protein': {
+    en: 'Protein',
+    uz: 'Oqsil',
+  },
+  'home.carbs': {
+    en: 'Carbs',
+    uz: 'Uglevodlar',
+  },
+  'home.fat': {
+    en: 'Fat',
+    uz: "Yog'lar",
+  },
+  'home.uzbekDietPlanner': {
+    en: 'AI Uzbek Athlete Diet Planner',
+    uz: "AI O'zbek Sportchi Parhez Rejalashtiruvchisi",
+  },
+  'home.openPlanner': {
+    en: 'Open Planner',
+    uz: 'Rejani Ochish',
+  },
+  'home.todaysTrainingFocus': {
+    en: "Today's Training Focus",
+    uz: "Bugungi Mashg'ulot Maqsadi",
+  },
+  'home.workouts': {
+    en: 'Workouts',
+    uz: "Mashg'ulotlar",
+  },
+  'home.program': {
+    en: 'Program',
+    uz: 'Dastur',
+  },
+  'home.completed': {
+    en: 'Completed',
+    uz: 'Bajarildi',
+  },
+  'home.start': {
+    en: 'Start',
+    uz: 'Boshlash',
+  },
+  'home.frequency': {
+    en: 'Frequency',
+    uz: 'Chastota',
+  },
+  'home.sessionsPerWk': {
+    en: 'Sessions / wk',
+    uz: 'mashg‘ulot / hafta',
+  },
+  'home.totalVolume': {
+    en: 'Total Volume',
+    uz: 'Jami Hajm',
+  },
+  'home.kgLiftedWk': {
+    en: 'kg lifted this wk',
+    uz: "kg ko'tarildi (bu hafta)",
+  },
+  'home.estStrength': {
+    en: 'Est. Strength',
+    uz: 'Kutilgan Kuch',
+  },
+  'home.progressiveOverload': {
+    en: 'Progressive overload',
+    uz: 'Progressiv yuklama',
+  },
+  'home.lastSession': {
+    en: 'Last session completed: 2 days ago',
+    uz: 'Oxirgi mashg‘ulot: 2 kun oldin',
+  },
+  'home.recoveryStatusLabel': {
+    en: 'Recovery status: 100% recovered',
+    uz: 'Tiklanish holati: 100% tiklandi',
+  },
+  'home.bodyWeight': {
+    en: 'Body Weight',
+    uz: 'Tana Vazni',
+  },
+  'home.logEntry': {
+    en: 'Log Entry',
+    uz: 'Kiritish',
+  },
+  'home.currentWeight': {
+    en: 'Current Weight',
+    uz: 'Hozirgi Vazn',
+  },
+  'home.targetGoal': {
+    en: 'Target Goal',
+    uz: 'Kutilgan Maqsad',
+  },
+  'home.last30Days': {
+    en: 'Last 30 Days',
+    uz: "So'nggi 30 kun",
+  },
+  'home.fatLossTrajectory': {
+    en: 'Consistent fat loss trajectory',
+    uz: "Barqaror vazn yo'qotish jarayoni",
+  },
+  'home.viewWeightHistory': {
+    en: 'View Weight History & Trends',
+    uz: "Vazn tarixi va tahlilini ko'rish",
+  },
+  'home.bmiCalculator': {
+    en: 'BMI Calculator',
+    uz: 'BMI Kalkulyatori',
+  },
+  'home.height': {
+    en: 'Height',
+    uz: "Bo'y",
+  },
+  'home.weight': {
+    en: 'Weight',
+    uz: 'Vazn',
+  },
+  'home.massIndexScore': {
+    en: 'Mass Index Score',
+    uz: 'Tana Massasi Indeksi',
+  },
+  'home.optimal': {
+    en: 'Optimal / Athletic',
+    uz: 'Optimal / Sportcha',
+  },
+  'home.underweight': {
+    en: 'Underweight',
+    uz: 'Vazn Yetishmasligi',
+  },
+  'home.overweight': {
+    en: 'Athletic / Overweight',
+    uz: 'Sportcha / Yuqori Vazn',
+  },
+  'home.highRisk': {
+    en: 'High Risk',
+    uz: 'Yuqori Xavf',
+  },
+  'home.idealWeightFor': {
+    en: 'Ideal Weight for',
+    uz: 'uchun ideal vazn',
+  },
+  'home.sevenDayActivity': {
+    en: '7-Day Training Activity & Volume',
+    uz: "7 Kunlik Mashg'ulot Faolligi va Hajmi",
+  },
+  'home.targetWorkouts': {
+    en: 'Target: 4 workouts',
+    uz: 'Maqsad: 4 mashg‘ulot',
+  },
+  'home.rest': {
+    en: 'Rest',
+    uz: 'Dam',
+  },
+  'home.activitySummary': {
+    en: '2 Sessions Completed · 1 Rest Day · 1 Scheduled Today',
+    uz: "2 Mashg'ulot bajarildi · 1 Dam olish · 1 Bugun rejalashtirilgan",
+  },
+  'home.weeklyOverload': {
+    en: 'Weekly Overload',
+    uz: 'Haftalik Yuklama',
+  },
+  'home.formulaQuetelet': {
+    en: 'Formula Quetelet',
+    uz: 'Ketelet Formulasi',
+  },
 };
+
