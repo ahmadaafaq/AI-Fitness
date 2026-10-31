@@ -76,6 +76,22 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
   const [activeTab, setActiveTab] = useState<'programs' | 'library' | 'anatomy' | 'history' | 'recovery'>('programs');
   const [selectedDayIdx, setSelectedDayIdx] = useState<number>(0);
 
+  // Helper to extract a short, punchy 1-2 word label for single-view day tabs without scroll
+  const getShortDayName = (title: string): string => {
+    if (!title) return '';
+    let clean = title.replace(/^Day\s*\d+[:\s-]*/i, '').trim();
+    const splitMatch = clean.match(/^(Push\s*[A-Z]?|Pull\s*[A-Z]?|Legs\s*[A-Z]?|Upper\s*[A-Z]?|Lower\s*[A-Z]?|Full\s*Body\s*[A-Z]?)/i);
+    if (splitMatch) return splitMatch[0].trim();
+    clean = clean.split('(')[0].trim();
+    const parts = clean.split(/[&+\-\/]/);
+    const firstPart = parts[0].trim();
+    const words = firstPart.split(/\s+/);
+    if (words.length <= 2 && words.join(' ').length <= 12) {
+      return words.join(' ');
+    }
+    return words[0] || 'Session';
+  };
+
   // Exercise Library Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState<string>('All');
@@ -730,27 +746,57 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
                   </p>
                 </div>
 
-                {/* Days Selector Pills */}
+                {/* Days Selector - All Days in Single View Without Scroll */}
                 <div className="space-y-2 relative z-10">
-                  <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Select Training Session:
-                  </p>
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                    {activeProgram.days.map((day, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedDayIdx(idx)}
-                        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 border ${
-                          safeDayIdx === idx
-                            ? 'bg-lime-400 text-slate-950 font-black border-lime-400 shadow-md shadow-lime-500/20'
-                            : 'bg-white dark:bg-[#141B24] border-slate-200 dark:border-[#222E3E] text-slate-700 dark:text-slate-300 hover:border-lime-500/40'
-                        }`}
-                      >
-                        <span>Day {day.dayNumber}</span>
-                        <span className="opacity-70 font-normal">·</span>
-                        <span className="font-semibold">{day.title.replace(/^Day \d+[:\s-]*/, '')}</span>
-                      </button>
-                    ))}
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      {t('workout.selectSession', 'Select Training Session')}:
+                    </p>
+                    <span className="text-[11px] font-mono text-lime-700 dark:text-lime-400 font-bold">
+                      {activeProgram.days.length} {language === 'uz' ? 'Kunlik Dastur' : 'Day Split'}
+                    </span>
+                  </div>
+
+                  {/* Equal-width segmented day tabs fitting all days across the screen without scroll */}
+                  <div
+                    className="grid gap-1.5 sm:gap-2 w-full p-1 bg-slate-100 dark:bg-[#0D131A] rounded-2xl border border-slate-200 dark:border-[#1E2734]"
+                    style={{
+                      gridTemplateColumns: `repeat(${activeProgram.days.length}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    {activeProgram.days.map((day, idx) => {
+                      const isSelected = safeDayIdx === idx;
+                      const shortTitle = getShortDayName(day.title);
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setSelectedDayIdx(idx)}
+                          className={`flex flex-col items-center justify-center py-2 px-1 sm:px-2 rounded-xl text-center transition-all cursor-pointer border ${
+                            isSelected
+                              ? 'bg-lime-400 text-slate-950 border-lime-400 shadow-md shadow-lime-500/25 font-black scale-[1.01]'
+                              : 'bg-white dark:bg-[#141B24] border-transparent text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-[#222E3E]'
+                          }`}
+                        >
+                          <span
+                            className={`text-xs sm:text-sm font-black tracking-tight leading-tight ${
+                              isSelected ? 'text-slate-950' : 'text-slate-900 dark:text-white'
+                            }`}
+                          >
+                            Day {day.dayNumber}
+                          </span>
+                          <span
+                            className={`text-[9px] sm:text-[10px] truncate max-w-full px-0.5 leading-tight mt-0.5 ${
+                              isSelected
+                                ? 'text-slate-950 font-bold'
+                                : 'text-slate-500 dark:text-slate-400 font-medium'
+                            }`}
+                          >
+                            {shortTitle || `${day.exercises.length} moves`}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

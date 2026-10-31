@@ -287,6 +287,18 @@ export const translations: Translations = {
     en: 'Calibrated by AI Coach for',
     uz: 'AI Murabbiy tomonidan moslashtirilgan:',
   },
+  'workout.selectSession': {
+    en: 'Select Training Session',
+    uz: 'Mashg‘ulot Kunini Tanlang',
+  },
+  'workout.showAllDays': {
+    en: 'View All Days',
+    uz: 'Barcha Kunlar',
+  },
+  'workout.singleDayView': {
+    en: 'Single Day View',
+    uz: 'Kunma-kun Ko‘rish',
+  },
   'workout.startThisWorkout': {
     en: 'Start This Workout',
     uz: 'Ushbu Mashg‘ulotni Boshlash',
