@@ -47,6 +47,8 @@ interface WorkoutModuleProps {
   exercises: Exercise[];
   history: WorkoutSession[];
   telemetry?: TelemetryData;
+  activeProgramId?: string;
+  onSetActiveProgramId?: (id: string) => void;
   isMobileMode?: boolean;
   onBack?: () => void;
   onStartProgramDay: (program: WorkoutProgram, dayIndex: number) => void;
@@ -61,6 +63,8 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
   exercises,
   history,
   telemetry,
+  activeProgramId,
+  onSetActiveProgramId,
   isMobileMode = false,
   onBack,
   onStartProgramDay,
@@ -70,6 +74,7 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
 }) => {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'programs' | 'library' | 'anatomy' | 'history' | 'recovery'>('programs');
+  const [selectedDayIdx, setSelectedDayIdx] = useState<number>(0);
 
   // Exercise Library Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,6 +129,8 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
         };
 
         onSaveProgram(newProg);
+        onSetActiveProgramId?.(newProg.id);
+        setSelectedDayIdx(0);
         setHighlightedProgramId(newProg.id);
         setActiveTab('programs');
         setIsGeneratingPlan(false);
@@ -316,6 +323,8 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
       };
 
       onSaveProgram(newProg);
+      onSetActiveProgramId?.(newProg.id);
+      setSelectedDayIdx(0);
       setHighlightedProgramId(newProg.id);
       setActiveTab('programs');
       setIsGeneratingPlan(false);
@@ -636,219 +645,250 @@ export const WorkoutModule: React.FC<WorkoutModuleProps> = ({
       </div>
 
       {/* TAB 1: PROGRAMMES */}
-      {activeTab === 'programs' && (
-        <div className="space-y-6">
-          {/* Newly Generated Program Toast */}
-          {generatedSuccessToast && (
-            <div className="bg-lime-500/15 border border-lime-400/60 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-lg shadow-lime-500/10 animate-fade-in">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-lime-400 text-slate-950 flex items-center justify-center font-bold shrink-0">
-                  <Sparkles className="w-4 h-4 fill-current" />
-                </div>
-                <div>
-                  <p className="font-bold text-white text-sm">Workout Programme Generated & Saved!</p>
-                  <p className="text-slate-300 text-xs">
-                    Added <strong className="text-lime-300 font-semibold">{generatedSuccessToast.name}</strong> to your library.
-                  </p>
+      {activeTab === 'programs' && (() => {
+        const activeProgram =
+          programs.find((p) => p.id === activeProgramId) ||
+          programs.find((p) => p.isCustom && (p.name.includes('AI') || p.id.includes('ai'))) ||
+          programs[0];
+
+        const otherPrograms = programs.filter((p) => p.id !== activeProgram?.id);
+        const safeDayIdx = activeProgram ? Math.min(selectedDayIdx, activeProgram.days.length - 1) : 0;
+        const activeDay = activeProgram?.days[safeDayIdx] || activeProgram?.days[0];
+
+        return (
+          <div className="space-y-6">
+            {/* Newly Generated Program Toast */}
+            {generatedSuccessToast && (
+              <div className="bg-lime-500/15 border border-lime-400/60 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-lg shadow-lime-500/10 animate-fade-in">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-lime-400 text-slate-950 flex items-center justify-center font-bold shrink-0">
+                    <Sparkles className="w-4 h-4 fill-current" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-white text-sm">Workout Programme Generated & Saved!</p>
+                    <p className="text-slate-300 text-xs">
+                      Set <strong className="text-lime-300 font-semibold">{generatedSuccessToast.name}</strong> as your active AI plan.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <button
-                onClick={() => {
-                  const el = document.getElementById(`program-${generatedSuccessToast.id}`);
-                  el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-                className="px-3.5 py-1.5 bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold rounded-lg shrink-0 whitespace-nowrap shadow-sm text-xs cursor-pointer"
-              >
-                View Programme ↓
-              </button>
-            </div>
-          )}
+            )}
 
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-                {t('workout.trainingPrograms')}
-              </h2>
-              <p className="text-xs text-slate-400">
-                Scientifically calibrated splits with progressive overload
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsAIPlannerOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold rounded-lg transition-colors shrink-0 shadow-sm shadow-lime-500/20 active:scale-95 cursor-pointer"
-              >
-                <Sparkles className="w-3.5 h-3.5 fill-current" />
-                <span>{t('workout.aiPlannerBtn')}</span>
-              </button>
-              <button
-                onClick={handleOpenNewProgram}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#141C25] hover:bg-[#1A2533] border border-[#233142] text-xs font-semibold text-lime-400 rounded-lg transition-colors shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Create</span>
-              </button>
-            </div>
-          </div>
+            {/* 1. HERO ACTIVE PLAN CARD (Prominently displays the AI Plan) */}
+            {activeProgram && (
+              <div className="bg-gradient-to-b from-white via-white to-slate-50 dark:from-[#131A22] dark:via-[#10151C] dark:to-[#0D1217] border-2 border-lime-400/80 dark:border-lime-500/50 rounded-3xl p-4 sm:p-6 shadow-xl shadow-lime-500/10 space-y-5 relative overflow-hidden">
+                {/* Glowing accent backdrop */}
+                <div className="absolute top-0 right-0 w-72 h-72 bg-lime-400/10 dark:bg-lime-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
-          <div className={`grid gap-4 ${isMobileMode ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
-            {programs.map((program) => {
-              // Derive color theme
-              const isPpl = program.id.includes('ppl');
-              const isUpper = program.id.includes('upper');
-              const isFull = program.id.includes('full');
-              const isNewlyCreated = highlightedProgramId === program.id;
-
-              return (
-                <div
-                  key={program.id}
-                  id={`program-${program.id}`}
-                  className={`bg-white dark:bg-[#10151C] border ${
-                    isNewlyCreated
-                      ? 'border-lime-400 ring-2 ring-lime-400/50 shadow-xl shadow-lime-500/20'
-                      : 'border-slate-200 dark:border-[#1E2734] hover:border-slate-300 dark:hover:border-[#2B384B]'
-                  } rounded-2xl overflow-hidden shadow-sm transition-all flex flex-col justify-between group`}
-                >
-                  {/* Visual Top Banner for Programme - Light & Dark adaptive */}
-                  <div
-                    className={`h-24 p-4 flex items-end justify-between bg-gradient-to-r ${
-                      isPpl
-                        ? 'from-emerald-100 via-teal-50 to-emerald-50 dark:from-emerald-950 dark:via-slate-900 dark:to-black border-b border-emerald-200/80 dark:border-transparent'
-                        : isUpper
-                        ? 'from-sky-100 via-blue-50 to-sky-50 dark:from-sky-950 dark:via-slate-900 dark:to-black border-b border-sky-200/80 dark:border-transparent'
-                        : isFull
-                        ? 'from-amber-100 via-orange-50 to-amber-50 dark:from-amber-950 dark:via-slate-900 dark:to-black border-b border-amber-200/80 dark:border-transparent'
-                        : 'from-purple-100 via-violet-50 to-purple-50 dark:from-purple-950 dark:via-slate-900 dark:to-black border-b border-purple-200/80 dark:border-transparent'
-                    } relative`}
-                  >
-                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                      {isNewlyCreated && (
-                        <span className="text-[10px] font-black bg-lime-400 text-slate-950 px-2 py-0.5 rounded-full shadow-sm animate-pulse">
-                          ✨ NEWLY GENERATED
-                        </span>
-                      )}
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/80 dark:bg-black/60 backdrop-blur-md text-slate-800 dark:text-lime-400 font-bold border border-slate-300/80 dark:border-lime-500/20 shadow-sm">
-                        {program.frequencyPerWeek} Days/Wk
-                      </span>
-                      {program.isCustom && (
-                        <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded">
-                          Custom
-                        </span>
-                      )}
-                    </div>
-
-                    <div>
-                      <span
-                        className={`text-[10px] font-bold uppercase tracking-wider ${
-                          isPpl
-                            ? 'text-emerald-800 dark:text-lime-400'
-                            : isUpper
-                            ? 'text-sky-800 dark:text-sky-300'
-                            : isFull
-                            ? 'text-amber-800 dark:text-amber-300'
-                            : 'text-purple-800 dark:text-purple-300'
-                        }`}
-                      >
-                        {program.level} Split
-                      </span>
-                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">{program.name}</h3>
-                    </div>
+                {/* Header Badges & Actions */}
+                <div className="flex items-center justify-between flex-wrap gap-2 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-lime-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-sm">
+                      <Sparkles className="w-3.5 h-3.5 fill-current" />
+                      {activeProgram.name.includes('AI') || activeProgram.isCustom
+                        ? t('workout.activePlanBadge', 'AI CALIBRATED')
+                        : t('workout.activeBadge', 'Active Plan')}
+                    </span>
+                    <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-slate-100 dark:bg-[#1A2533] border border-slate-200 dark:border-[#26374D] text-slate-700 dark:text-slate-300 font-bold">
+                      {activeProgram.frequencyPerWeek} {t('workout.daysPerWeek', 'days / week')}
+                    </span>
+                    <span className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 dark:bg-[#1A2533] border border-slate-200 dark:border-[#26374D] text-slate-700 dark:text-slate-300 font-bold capitalize">
+                      {activeProgram.level}
+                    </span>
                   </div>
 
-                  <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">{program.description}</p>
-
-                      {/* Program Days List */}
-                      <div className="space-y-2 mb-4">
-                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Workouts in this Split:
-                        </span>
-                        {program.days.map((day, dIdx) => (
-                          <div
-                            key={dIdx}
-                            className="p-3 rounded-xl bg-slate-50 dark:bg-[#141B24] border border-slate-200 dark:border-[#202B3A] space-y-2.5"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{day.title}</p>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                  {day.exercises.length} Movements · ~
-                                  {day.exercises.reduce((s, e) => s + e.targetSets, 0)} Total Sets
-                                </p>
-                              </div>
-                              <button
-                                onClick={() => onStartProgramDay(program, dIdx)}
-                                className="flex items-center gap-1 px-3 py-1 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-bold rounded-lg transition-colors shadow-sm"
-                              >
-                                <Play className="w-3 h-3 fill-current" />
-                                Start
-                              </button>
-                            </div>
-
-                            {/* Animated Movements Preview Strip in Split */}
-                            <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
-                              {day.exercises.map((pEx, pIdx) => {
-                                const exData = exercises.find((e) => e.id === pEx.exerciseId);
-                                if (!exData) return null;
-                                const load = calculateProgramPrescribedLoad(
-                                  exData.name,
-                                  exData,
-                                  1,
-                                  pEx.targetSets,
-                                  pEx.targetReps,
-                                  pEx.targetRpe || 8.0,
-                                  userProfile
-                                );
-
-                                return (
-                                  <div
-                                    key={pIdx}
-                                    onClick={() => setSelectedExerciseModal(exData)}
-                                    className="w-22 shrink-0 bg-white dark:bg-[#0F151D] hover:bg-slate-100 dark:hover:bg-[#16202B] rounded-xl p-1.5 border border-slate-200 dark:border-[#212E3D] hover:border-lime-500/50 cursor-pointer group transition-all shadow-xs"
-                                    title={`Click to view ${exData.name} form animation`}
-                                  >
-                                    <div className="w-full h-12 rounded-lg bg-slate-100 dark:bg-black/60 overflow-hidden mb-1 flex items-center justify-center">
-                                      <ExerciseAnimation exercise={exData} isThumbnail={true} className="w-full h-full" />
-                                    </div>
-                                    <p className="text-[10px] font-bold text-slate-800 dark:text-slate-300 group-hover:text-lime-600 dark:group-hover:text-lime-400 truncate">
-                                      {exData.name}
-                                    </p>
-                                    <p className="text-[9px] text-slate-500 dark:text-slate-400 font-mono">
-                                      {pEx.targetSets} × {pEx.targetReps}
-                                    </p>
-                                    <p className="text-[9px] text-lime-700 dark:text-lime-400 font-mono font-bold">
-                                      Load: {load.targetWeightKg}kg
-                                    </p>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="pt-3 border-t border-[#1A232E] flex items-center justify-between text-[11px] text-slate-400">
-                      <span>Autoregulation: Active</span>
-                      {program.isCustom ? (
-                        <button
-                          onClick={() => handleEditProgram(program)}
-                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-white"
-                        >
-                          <Edit2 className="w-3 h-3" /> Edit
-                        </button>
-                      ) : (
-                        <span className="text-slate-300">Periodized 4-Wk Wave</span>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsAIPlannerOpen(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-lime-400 hover:bg-lime-300 text-slate-950 text-xs font-extrabold rounded-xl transition-all shadow-sm shadow-lime-500/20 active:scale-95 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 fill-current" />
+                      <span>{t('workout.generateNewAI', 'AI Split Planner')}</span>
+                    </button>
+                    {activeProgram.isCustom && (
+                      <button
+                        onClick={() => handleEditProgram(activeProgram)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#141C25] hover:bg-[#1A2533] border border-[#233142] text-xs font-semibold text-lime-400 rounded-xl transition-colors cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+                    )}
                   </div>
                 </div>
-              );
-            })}
+
+                {/* Title & Context */}
+                <div className="space-y-1 relative z-10">
+                  <p className="text-xs font-semibold text-lime-600 dark:text-lime-400 uppercase tracking-wider">
+                    {t('workout.calibratedFor', 'Calibrated by AI Coach for')} {userProfile?.name?.split(' ')[0] || 'Athlete'}
+                  </p>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                    {activeProgram.name}
+                  </h2>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+                    {activeProgram.description}
+                  </p>
+                </div>
+
+                {/* Days Selector Pills */}
+                <div className="space-y-2 relative z-10">
+                  <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Select Training Session:
+                  </p>
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                    {activeProgram.days.map((day, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedDayIdx(idx)}
+                        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 border ${
+                          safeDayIdx === idx
+                            ? 'bg-lime-400 text-slate-950 font-black border-lime-400 shadow-md shadow-lime-500/20'
+                            : 'bg-white dark:bg-[#141B24] border-slate-200 dark:border-[#222E3E] text-slate-700 dark:text-slate-300 hover:border-lime-500/40'
+                        }`}
+                      >
+                        <span>Day {day.dayNumber}</span>
+                        <span className="opacity-70 font-normal">·</span>
+                        <span className="font-semibold">{day.title.replace(/^Day \d+[:\s-]*/, '')}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Selected Day Workout Box */}
+                {activeDay && (
+                  <div className="bg-slate-50 dark:bg-[#141B23] border border-slate-200 dark:border-[#222F40] rounded-2xl p-4 sm:p-5 space-y-4 relative z-10">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-[#1E2B3A] pb-3.5">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-lime-600 dark:text-lime-400 tracking-wider">
+                          Target Session
+                        </span>
+                        <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5">
+                          {activeDay.title}
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          {activeDay.exercises.length} Movements · ~
+                          {activeDay.exercises.reduce((s, e) => s + e.targetSets, 0)} Total Sets · Autoregulated Loads
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => onStartProgramDay(activeProgram, safeDayIdx)}
+                        className="flex items-center justify-center gap-2 px-5 py-3 bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-lime-500/30 transition-all active:scale-95 cursor-pointer shrink-0"
+                      >
+                        <Play className="w-4 h-4 fill-current" />
+                        <span>{t('workout.startThisWorkout', 'Start This Workout')}</span>
+                      </button>
+                    </div>
+
+                    {/* Movements in this Day */}
+                    <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                      {activeDay.exercises.map((pEx, pIdx) => {
+                        const exData = exercises.find((e) => e.id === pEx.exerciseId);
+                        if (!exData) return null;
+                        const load = calculateProgramPrescribedLoad(
+                          exData.name,
+                          exData,
+                          1,
+                          pEx.targetSets,
+                          pEx.targetReps,
+                          pEx.targetRpe || 8.0,
+                          userProfile
+                        );
+
+                        return (
+                          <div
+                            key={pIdx}
+                            onClick={() => setSelectedExerciseModal(exData)}
+                            className="flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-[#0F151E] border border-slate-200 dark:border-[#1E2837] hover:border-lime-500/50 cursor-pointer transition-all group shadow-xs"
+                          >
+                            <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-black/60 overflow-hidden shrink-0 flex items-center justify-center border border-slate-200 dark:border-[#212E3D]">
+                              <ExerciseAnimation exercise={exData} isThumbnail={true} className="w-full h-full" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-lime-600 dark:group-hover:text-lime-400 truncate">
+                                {exData.name}
+                              </p>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+                                {pEx.targetSets} sets × {pEx.targetReps} reps
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-lime-500/15 text-lime-700 dark:text-lime-400 border border-lime-500/25">
+                                  Load: {load.targetWeightKg}kg
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  RPE {pEx.targetRpe || 8.0}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 2. EXPLORE OTHER TRAINING SPLITS SECTION */}
+            {otherPrograms.length > 0 && (
+              <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-[#1B2533]">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    {t('workout.otherSplits', 'Explore Other Training Splits')}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {t('workout.otherSplitsSubtitle', 'Switch your active plan or explore pre-calibrated splits')}
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {otherPrograms.map((prog) => (
+                    <div
+                      key={prog.id}
+                      className="p-4 rounded-2xl bg-white dark:bg-[#10151C] border border-slate-200 dark:border-[#1E2734] hover:border-slate-300 dark:hover:border-[#2D3B4E] transition-all flex flex-col justify-between space-y-3 shadow-xs"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] mb-1.5">
+                          <span className="px-2 py-0.5 rounded-full font-mono text-[10px] font-bold bg-slate-100 dark:bg-[#1A232E] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#243142]">
+                            {prog.frequencyPerWeek} Days/Wk
+                          </span>
+                          <span className="text-slate-500 capitalize">{prog.level}</span>
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">{prog.name}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
+                          {prog.description}
+                        </p>
+                        <p className="text-[11px] text-slate-400 mt-2 font-mono">
+                          {prog.days.length} workouts ({prog.days.map((d) => d.title.split('(')[0].replace(/^Day \d+[:\s-]*/, '')).join(', ')})
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-[#1A232E]">
+                        <button
+                          onClick={() => {
+                            onSetActiveProgramId?.(prog.id);
+                            setSelectedDayIdx(0);
+                          }}
+                          className="flex-1 py-1.5 px-3 rounded-lg bg-lime-400 hover:bg-lime-300 text-slate-950 font-bold text-xs transition-colors shadow-xs cursor-pointer"
+                        >
+                          {t('workout.switchPlan', 'Set as Active Plan')}
+                        </button>
+                        <button
+                          onClick={() => onStartProgramDay(prog, 0)}
+                          className="p-1.5 rounded-lg bg-slate-100 dark:bg-[#161F2A] hover:bg-slate-200 dark:hover:bg-[#202C3B] text-slate-800 dark:text-slate-200 transition-colors cursor-pointer"
+                          title="Start Day 1"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* TAB 2: EXERCISE LIBRARY */}
       {activeTab === 'library' && (

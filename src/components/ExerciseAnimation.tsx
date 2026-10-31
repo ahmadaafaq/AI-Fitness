@@ -608,9 +608,6 @@ export const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({
     return (
       <div className={`relative bg-[#090D11] rounded-xl overflow-hidden border border-[#1A2430] flex items-center justify-center shrink-0 ${className}`}>
         {renderVisualSimulation()}
-        <div className="absolute bottom-1 right-1 px-1 py-0.2 bg-black/80 backdrop-blur-sm rounded text-[8px] font-mono text-lime-400 font-bold border border-lime-500/20">
-          60 FPS
-        </div>
       </div>
     );
   }

@@ -275,6 +275,42 @@ export const translations: Translations = {
     en: 'exercises',
     uz: 'mashq',
   },
+  'workout.activePlan': {
+    en: 'YOUR ACTIVE AI WORKOUT PLAN',
+    uz: "SIZNING FAOL AI MASHG'ULOT REJANGIZ",
+  },
+  'workout.activePlanBadge': {
+    en: 'AI CALIBRATED',
+    uz: 'AI MOSLASHTIRILGAN',
+  },
+  'workout.calibratedFor': {
+    en: 'Calibrated by AI Coach for',
+    uz: 'AI Murabbiy tomonidan moslashtirilgan:',
+  },
+  'workout.startThisWorkout': {
+    en: 'Start This Workout',
+    uz: 'Ushbu Mashg‘ulotni Boshlash',
+  },
+  'workout.switchPlan': {
+    en: 'Set as Active Plan',
+    uz: 'Faol Reja Qilib Tanlash',
+  },
+  'workout.activeBadge': {
+    en: 'Active Plan',
+    uz: 'Faol Reja',
+  },
+  'workout.otherSplits': {
+    en: 'Explore Other Training Splits',
+    uz: "Boshqa Mashg'ulot Dasturlari",
+  },
+  'workout.otherSplitsSubtitle': {
+    en: 'Switch your active plan or explore pre-calibrated splits',
+    uz: "Faol rejangizni o'zgartiring yoki tayyor dasturlarni ko'ring",
+  },
+  'workout.generateNewAI': {
+    en: 'AI Split Planner',
+    uz: 'AI Reja Tuzuvchi',
+  },
 
   // AI Coach Module
   'coach.title': {

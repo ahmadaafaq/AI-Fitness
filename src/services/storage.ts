@@ -107,9 +107,15 @@ export const StorageService = {
     if (index >= 0) {
       list[index] = program;
     } else {
-      list.push(program);
+      list.unshift(program);
     }
     safeSet(KEYS.PROGRAMS, list);
+  },
+  getActiveProgramId(): string | null {
+    return safeGet<string | null>('yuksal_active_program_id', null);
+  },
+  setActiveProgramId(id: string): void {
+    safeSet('yuksal_active_program_id', id);
   },
 
   // Workout History / Sessions

@@ -33,6 +33,7 @@ import { MasterclassesModule } from './components/MasterclassesModule';
 import { GuidedIntroModal } from './components/GuidedIntroModal';
 import { CheckoutItem, PaymentCheckoutModal } from './components/PaymentCheckoutModal';
 import { calculateProgramPrescribedLoad } from './services/loadPreparation';
+import { generatePersonalizedAIPlan } from './services/aiWorkoutGenerator';
 import { Smartphone, Monitor, Sparkles } from 'lucide-react';
 
 export default function App() {
@@ -84,6 +85,27 @@ export default function App() {
   // Active Workout State (Allows minimizing and resuming seamlessly)
   const [activeWorkoutSession, setActiveWorkoutSession] = useState<WorkoutSession | null>(null);
 
+  // Active Program ID
+  const [activeProgramId, setActiveProgramId] = useState<string>(() => {
+    return StorageService.getActiveProgramId() || '';
+  });
+
+  // Ensure user has a personalized AI plan ready
+  useEffect(() => {
+    const progs = StorageService.getPrograms();
+    const existingAiPlan = progs.find((p) => p.isCustom && (p.name.includes('AI') || p.id.includes('ai')));
+    if (!existingAiPlan) {
+      const generated = generatePersonalizedAIPlan(userProfile);
+      StorageService.saveProgram(generated);
+      StorageService.setActiveProgramId(generated.id);
+      setActiveProgramId(generated.id);
+      setPrograms(StorageService.getPrograms());
+    } else if (!activeProgramId) {
+      StorageService.setActiveProgramId(existingAiPlan.id);
+      setActiveProgramId(existingAiPlan.id);
+    }
+  }, []);
+
   // Check onboarding on initial launch
   useEffect(() => {
     if (!userProfile.onboardingCompleted) {
@@ -100,6 +122,12 @@ export default function App() {
   const handleOnboardingComplete = (updated: UserProfile) => {
     setUserProfile(updated);
     StorageService.saveUserProfile(updated);
+    // Automatically generate calibrated AI workout plan from user's onboarding biometrics & goals
+    const aiPlan = generatePersonalizedAIPlan(updated);
+    StorageService.saveProgram(aiPlan);
+    StorageService.setActiveProgramId(aiPlan.id);
+    setActiveProgramId(aiPlan.id);
+    setPrograms(StorageService.getPrograms());
     setIsOnboardingOpen(false);
     // Show guided first-run tour after completing onboarding
     setShowGuidedIntro(true);
@@ -476,6 +504,11 @@ export default function App() {
           exercises={exercises}
           history={workoutHistory}
           telemetry={telemetry}
+          activeProgramId={activeProgramId}
+          onSetActiveProgramId={(id) => {
+            setActiveProgramId(id);
+            StorageService.setActiveProgramId(id);
+          }}
           isMobileMode={isMobile}
           onBack={handleGlobalBack}
           onStartProgramDay={handleStartProgramDay}
